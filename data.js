@@ -71,7 +71,6 @@ const IMAGENES = [
       { src:"imagenes/1784079154623-af8dcd97-fb63-4071-89d6-73de46d27f01.webp", titulo:"Imagen de testeo 3", artista:"coso", categoria:"fanart", fecha:"2026-07-15", placeholder:"🎨", nota:"coso", destacado:true },
       { src:"imagenes/1784079132265-meme-gowi.webp", titulo:"imagen de testeo 2", artista:"coso", categoria:"fanart", fecha:"2026-07-15", placeholder:"🎨", nota:"coso", destacado:true },
       { src:"imagenes/1784079080862-proyecto-gowi-1.webp", titulo:"Imagen de testeo", artista:"coso", categoria:"fanart", fecha:"2026-07-15", placeholder:"🎨", nota:"coso", destacado:false },
-      { src:"imagenes/1783109613612-proyecto-gowi-1.webp", titulo:"coso1", artista:"coso", categoria:"fanart", fecha:"2026-07-03", placeholder:"🎨", nota:"coso", destacado:false },
 ];
 
 /* ============================
