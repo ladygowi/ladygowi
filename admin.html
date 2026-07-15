@@ -1207,15 +1207,49 @@ function renderGamesList(games){
     const ovejas="🐑".repeat(g.nota);
     const thumb = g.imagen ? `<img src="https://${cfg.owner}.github.io/${cfg.repo}/${g.imagen}" style="width:36px;height:46px;object-fit:cover;border-radius:6px;flex-shrink:0" onerror="this.style.display='none'"/>` : "";
     const div=document.createElement("div");
-    div.className="song-item";
-    div.style.alignItems="center";
     div.innerHTML=`
-      ${thumb}
-      <div class="song-info">
-        <div class="si-title">${g.titulo} ${ovejas} (${g.nota}/5)</div>
-        <div class="si-id">${REC_LABEL[g.rec]}${g.nota_texto?" · "+g.nota_texto:""}</div>
+      <div class="song-item" style="align-items:center">
+        ${thumb}
+        <div class="song-info">
+          <div class="si-title">${g.titulo} ${ovejas} (${g.nota}/5)</div>
+          <div class="si-id">${REC_LABEL[g.rec]}${g.nota_texto?" · "+g.nota_texto:""}</div>
+        </div>
+        <button class="icon-btn" title="Editar" onclick="toggleEdit(${g.lineIndex})">✎</button>
+        <button class="icon-btn danger" title="Eliminar" onclick="deleteGame(${g.lineIndex})">🗑</button>
       </div>
-      <button class="icon-btn danger" title="Eliminar" onclick="deleteGame(${g.lineIndex})">🗑</button>`;
+      <div class="edit-form" id="edit-${g.lineIndex}">
+        <div class="field"><label>Nombre del juego</label><input type="text" id="e-game-titulo-${g.lineIndex}" value="${g.titulo.replace(/"/g,'&quot;')}"/></div>
+        <div class="field">
+          <label>Reemplazar portada (opcional)</label>
+          <input type="file" id="e-game-imagen-${g.lineIndex}" accept="image/*"/>
+          <div class="hint">Si no eliges nada, se mantiene la portada actual.</div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>Nota (1 a 5 ovejas 🐑)</label>
+            <select id="e-game-nota-${g.lineIndex}">
+              <option value="1" ${g.nota===1?"selected":""}>🐑 (1/5)</option>
+              <option value="2" ${g.nota===2?"selected":""}>🐑🐑 (2/5)</option>
+              <option value="3" ${g.nota===3?"selected":""}>🐑🐑🐑 (3/5)</option>
+              <option value="4" ${g.nota===4?"selected":""}>🐑🐑🐑🐑 (4/5)</option>
+              <option value="5" ${g.nota===5?"selected":""}>🐑🐑🐑🐑🐑 (5/5)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>¿Lo recomienda?</label>
+            <select id="e-game-rec-${g.lineIndex}">
+              <option value="si" ${g.rec==="si"?"selected":""}>✅ Sí recomienda</option>
+              <option value="tal" ${g.rec==="tal"?"selected":""}>🤔 Tal vez</option>
+              <option value="no" ${g.rec==="no"?"selected":""}>❌ No recomienda</option>
+            </select>
+          </div>
+        </div>
+        <div class="field"><label>Comentario (opcional)</label><textarea id="e-game-nota-texto-${g.lineIndex}">${g.nota_texto}</textarea></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-primary" style="flex:1" onclick="saveGameEdit(${g.lineIndex})">Guardar cambios</button>
+          <button class="btn-secondary" onclick="toggleEdit(${g.lineIndex})">Cancelar</button>
+        </div>
+      </div>`;
     box.appendChild(div);
   });
 }
@@ -1267,6 +1301,36 @@ async function addGame(){
     imgInput.value="";
     await loadGamesManage();
   }catch(e){ alert("Error al agregar: "+e.message); }
+}
+
+async function saveGameEdit(lineIndex){
+  const game=window._gameItems.find(x=>x.lineIndex===lineIndex);
+  const indent=window._dataLines[lineIndex].match(/^(\s*)/)[1];
+  const titulo=document.getElementById(`e-game-titulo-${lineIndex}`).value.trim();
+  const nota=parseInt(document.getElementById(`e-game-nota-${lineIndex}`).value);
+  const rec=document.getElementById(`e-game-rec-${lineIndex}`).value;
+  const nota_texto=document.getElementById(`e-game-nota-texto-${lineIndex}`).value.trim();
+  const imgInput=document.getElementById(`e-game-imagen-${lineIndex}`);
+  const imgFile=imgInput.files[0];
+  if(!titulo){ alert("Escribe el nombre del juego."); return; }
+  try{
+    let imagenPath=game.imagen||"";
+    if(imgFile){
+      const base64=await new Promise((res,rej)=>{
+        const reader=new FileReader();
+        reader.onload=e=>res(e.target.result.split(",")[1]);
+        reader.onerror=rej;
+        reader.readAsDataURL(imgFile);
+      });
+      const cleanName=Date.now()+"-"+imgFile.name.toLowerCase().replace(/[^a-z0-9.\-]/g,"-").replace(/-+/g,"-");
+      imagenPath=`imagenes/juegos/${cleanName}`;
+      await putFile(imagenPath,base64,`Sube portada: ${titulo}`);
+    }
+    const newLine=`${indent}{ titulo:"${esc(titulo)}", nota:${nota}, rec:"${rec}", nota_texto:"${esc(nota_texto)}"${imagenPath?`, imagen:"${imagenPath}"`:""} },`;
+    const lines=window._dataLines.slice(); lines[lineIndex]=newLine;
+    await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Edita juego: ${titulo}`);
+    await loadGamesManage();
+  }catch(e){ alert("Error al guardar: "+e.message); }
 }
 
 /* ==== LOG ==== */
