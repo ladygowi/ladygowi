@@ -23,7 +23,7 @@ const CATEGORIES = ["fanart","emotes","memes"];
    📖 LORE
    ============================ */
 const LORE = {
-  quien: "LadyGowi es una vtuber de habla hispana, conocida por su personalidad tierna y sus cuernos de oveja. Su comunidad, los \"Gowitos\", la acompañan en cada stream con mucho cariño.",
+  quien: "LadyGowi es una vtuber de habla hispana, conocida por su personalidad tierna y sus cuernos de oveja. Su comunidad, los \"Corderitos\", la acompañan en cada stream con mucho cariño.",
   metas: [
     { ico:"🎯", txt:"Próximamente..." },
     { ico:"✨", txt:"Próximamente..." },
