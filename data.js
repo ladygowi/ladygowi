@@ -90,7 +90,6 @@ const OVEJA_IMGS = [
    ============================ */
 const JUEGOS = [
   { titulo:"League of legends", nota:5, rec:"no", nota_texto:"Relación toxica de amor y odio", imagen:"imagenes/juegos/1784079378868-images-5-.jpg" },
-  { titulo:"League of legends", nota:5, rec:"no", nota_texto:"Relacion de amor y odio", imagen:"imagenes/juegos/1783110000356-images-5-.jpg" },
   { titulo:"Minecraft", nota:5, rec:"si", nota_texto:"Pulentoso", imagen:"imagenes/juegos/1783109789490-homepage-discover-our-games-mc-vanilla-keyart-864x864.jpg" },
   /* ejemplo — borra esta línea y agrega tus juegos:
   */
