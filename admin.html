@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>LadyGowi — Panel de Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#110D1A;--bg2:#1E1428;--card:#1A1025;--border-c:#2E1F45;--text:#E8E0F5;--text2:#A87FD4;--accent:#7B5EA7;--accent-light:#C9A8E8;--tag-bg:#1E1428;--tag-border:#7B5EA7;--tag-text:#C9A8E8;--glow:rgba(123,94,167,.25);--ok:#7FD89B;--err:#E08A8A}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;padding:2rem 1rem 5rem}
+.wrap{max-width:640px;margin:0 auto}
+h1{font-family:'Cinzel',serif;font-size:26px;font-weight:600;letter-spacing:.08em;text-align:center;margin-bottom:6px;color:var(--text);text-shadow:0 0 30px var(--glow)}
+h1 span{color:var(--accent-light)}
+.subtitle{text-align:center;font-size:12px;color:var(--text2);letter-spacing:.1em;margin-bottom:2rem}
+.panel{background:var(--card);border:.5px solid var(--border-c);border-radius:18px;padding:1.5rem;margin-bottom:1.2rem}
+.panel-title{font-size:13px;letter-spacing:.08em;color:var(--accent-light);margin-bottom:1rem;text-transform:uppercase;font-weight:500}
+
+/* ==== PESTAÑAS DEL ADMIN ==== */
+.admin-tabs{display:flex;gap:5px;background:rgba(255,255,255,.05);border:.5px solid var(--border-c);padding:5px;border-radius:14px;margin-bottom:1.4rem;flex-wrap:wrap}
+.admin-tab{padding:7px 14px;font-size:11.5px;letter-spacing:.05em;color:var(--text2);cursor:pointer;border-radius:10px;border:none;background:transparent;transition:all .2s;white-space:nowrap;font-family:'Inter',sans-serif}
+.admin-tab:hover{background:rgba(255,255,255,.07);color:var(--text)}
+.admin-tab.active{background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(123,94,167,.18));color:var(--text);box-shadow:0 0 0 1px rgba(168,85,247,.4)}
+.admin-section{display:none}.admin-section.active{display:block}
+.field{margin-bottom:1rem}
+label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;letter-spacing:.03em}
+input[type=text],input[type=password],textarea,select{width:100%;background:var(--bg2);border:.5px solid var(--border-c);border-radius:10px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:64px}
+.hint{font-size:11px;color:var(--text2);margin-top:5px;opacity:.8;line-height:1.4}
+.hint a{color:var(--accent-light)}
+button{font-family:'Inter',sans-serif;cursor:pointer;border:none}
+.btn-primary{width:100%;padding:13px;border-radius:12px;font-size:14px;font-weight:600;background:linear-gradient(135deg,var(--accent),var(--accent-light));color:#fff;letter-spacing:.02em;transition:transform .15s,box-shadow .15s}
+.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 20px var(--glow)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{padding:9px 16px;border-radius:10px;font-size:12px;background:var(--tag-bg);border:.5px solid var(--tag-border);color:var(--tag-text)}
+.btn-secondary:hover{background:var(--accent);color:#fff}
+.status-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.status-pill{font-size:11px;padding:4px 12px;border-radius:20px;border:.5px solid var(--ok);color:var(--ok);display:none}
+.status-pill.show{display:inline-block}
+.dropzone{border:1.5px dashed var(--border-c);border-radius:14px;padding:2.2rem 1rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative;background:var(--bg2)}
+.dropzone.drag{border-color:var(--accent-light);background:rgba(123,94,167,.12)}
+.dropzone-icon{font-size:30px;margin-bottom:8px}
+.dropzone-text{font-size:13px;color:var(--text)}
+.dropzone-sub{font-size:11px;color:var(--text2);margin-top:4px}
+.dropzone input[type=file]{display:none}
+.compress-bar{background:var(--bg2);border:.5px solid var(--border-c);border-radius:12px;padding:10px 14px;margin-top:.8rem;display:none}
+.compress-bar.show{display:block}
+.compress-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.compress-row label{font-size:12px;color:var(--text2);white-space:nowrap}
+.compress-row input[type=range]{flex:1;min-width:80px;accent-color:var(--accent)}
+.compress-val{font-size:12px;font-weight:600;color:var(--accent-light);min-width:30px}
+.compress-info{margin-top:6px;font-size:11px;color:var(--text2);display:flex;gap:12px;flex-wrap:wrap}
+.compress-info .ci-before{color:var(--text2)}
+.compress-info .ci-after{color:#7ecb9e}
+.compress-info .ci-saving{color:var(--accent-light);font-weight:600}
+.preview-wrap{display:none;text-align:center}
+.preview-wrap.show{display:block}
+.preview-wrap img{max-width:100%;max-height:260px;border-radius:12px;border:.5px solid var(--border-c)}
+.preview-name{font-size:11px;color:var(--text2);margin-top:8px;word-break:break-all}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.row2{grid-template-columns:1fr}}
+.checkbox-row{display:flex;align-items:center;gap:8px}
+.checkbox-row input{width:auto;accent-color:var(--accent)}
+.checkbox-row label{margin:0;cursor:pointer}
+#log{font-size:12px;line-height:1.6;padding-top:10px;display:none}
+#log.show{display:block}
+#log .line{padding:4px 0;border-top:.5px solid var(--border-c)}
+#log .line.ok{color:var(--ok)}
+#log .line.err{color:var(--err)}
+#log .line.info{color:var(--text2)}
+.top-link{display:block;text-align:center;font-size:12px;color:var(--text2);margin-bottom:1.4rem;text-decoration:none}
+.top-link:hover{color:var(--accent-light)}
+select option{background:var(--bg2)}
+.category-manage{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.cat-chip{font-size:11px;padding:4px 10px;border-radius:14px;background:var(--tag-bg);border:.5px solid var(--tag-border);color:var(--tag-text);display:flex;align-items:center;gap:6px}
+.cat-chip button{background:none;color:var(--err);font-size:13px;line-height:1;padding:0}
+.add-cat-row{display:flex;gap:8px;margin-top:10px}
+.add-cat-row input{flex:1}
+.add-cat-row button{flex-shrink:0}
+
+/* ==== LOCK SCREEN ==== */
+#lock-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:1.5rem}
+#lock-screen.hidden{display:none}
+.lock-box{background:var(--card);border:.5px solid var(--border-c);border-radius:18px;padding:2rem 1.6rem;max-width:340px;width:100%;text-align:center}
+.lock-box h2{font-family:'Cinzel',serif;font-size:20px;color:var(--accent-light);margin-bottom:6px;letter-spacing:.06em}
+.lock-box p{font-size:12px;color:var(--text2);margin-bottom:1.2rem}
+.lock-box input{margin-bottom:10px}
+.lock-err{font-size:12px;color:var(--err);min-height:16px;margin-top:4px}
+body.locked .wrap{display:none}
+
+/* ==== MANAGE LISTS ==== */
+.manage-item{display:flex;gap:12px;align-items:center;padding:10px;border-radius:12px;background:var(--bg2);border:.5px solid var(--border-c);margin-bottom:10px}
+.manage-item img{width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0;background:#000}
+.manage-info{flex:1;min-width:0}
+.manage-info .mi-title{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.manage-info .mi-sub{font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.manage-actions{display:flex;gap:6px;flex-shrink:0}
+.icon-btn{width:32px;height:32px;border-radius:8px;background:var(--tag-bg);border:.5px solid var(--tag-border);color:var(--tag-text);font-size:14px;display:flex;align-items:center;justify-content:center}
+.icon-btn:hover{background:var(--accent);color:#fff}
+.icon-btn.danger:hover{background:var(--err);border-color:var(--err)}
+.edit-form{display:none;margin-top:10px;padding-top:10px;border-top:.5px solid var(--border-c)}
+.edit-form.show{display:block}
+.edit-form .row2{margin-bottom:10px}
+.manage-empty{font-size:12px;color:var(--text2);text-align:center;padding:1rem 0}
+.song-item{display:flex;gap:10px;align-items:center;padding:10px;border-radius:12px;background:var(--bg2);border:.5px solid var(--border-c);margin-bottom:10px}
+.song-item .song-info{flex:1;min-width:0}
+.song-item .song-info .si-title{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song-item .song-info .si-id{font-size:11px;color:var(--text2)}
+.refresh-row{display:flex;justify-content:flex-end;margin-bottom:.8rem}
+.sheep-icons-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:.5rem}
+.sheep-icon-item{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--bg2);border:.5px solid var(--border-c);border-radius:12px;padding:10px;width:90px}
+.sheep-icon-item img{width:56px;height:56px;object-fit:contain}
+.sheep-icon-item .si-name{font-size:10px;color:var(--text2);text-align:center;word-break:break-all}
+.sheep-icon-item button{font-size:11px;padding:2px 8px;border-radius:8px;background:var(--tag-bg);border:.5px solid var(--tag-border);color:var(--err);cursor:pointer}
+.sheep-icon-item button:hover{background:var(--err);color:#fff}
+
+/* ==== LIVE PREVIEW CARD ==== */
+.live-preview-card{border:.5px solid var(--border-c);background:var(--bg2);border-radius:14px;overflow:hidden;max-width:230px}
+.lp-img-wrap{position:relative;width:100%;height:150px;background:#1c1626;display:flex;align-items:center;justify-content:center}
+.lp-img-wrap img{width:100%;height:100%;object-fit:cover;display:none}
+.lp-img-empty{font-size:30px;opacity:.5}
+.lp-body{padding:8px 12px 10px}
+.lp-title{font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp-artist{font-size:11px;color:var(--text2);margin-top:2px}
+.lp-foot{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+</style>
+</head>
+<body class="locked">
+<div id="lock-screen">
+  <div class="lock-box">
+    <h2>Lady<span style="color:var(--accent-light)">Gowi</span></h2>
+    <p>Panel privado · ingresa la contraseña para continuar</p>
+    <input type="password" id="lock-pass" placeholder="Contraseña" onkeydown="if(event.key==='Enter')tryUnlock()"/>
+    <button class="btn-primary" onclick="tryUnlock()">Entrar</button>
+    <div class="lock-err" id="lock-err"></div>
+  </div>
+</div>
+<div class="wrap">
+  <h1>Lady<span>Gowi</span> · Admin</h1>
+  <div class="subtitle">PANEL PRIVADO DE PUBLICACIÓN</div>
+  <a class="top-link" href="index.html">← Volver a la galería pública</a>
+
+  <!-- Config siempre visible -->
+  <div class="panel" id="config-panel">
+    <div class="panel-title">🔑 Conectar con GitHub</div>
+    <div class="field">
+      <label>Token de acceso personal (Personal Access Token)</label>
+      <input type="password" id="gh-token" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"/>
+      <div class="hint">Se guarda solo en este navegador, nunca se sube al repositorio.</div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Usuario de GitHub</label>
+        <input type="text" id="gh-owner" placeholder="chibizuki2" value="chibizuki2"/>
+      </div>
+      <div class="field">
+        <label>Nombre del repositorio</label>
+        <input type="text" id="gh-repo" placeholder="Ensayo-gow" value="Ensayo-gow"/>
+      </div>
+    </div>
+    <div class="status-row">
+      <button class="btn-secondary" onclick="saveConfig()">Guardar conexión</button>
+      <span class="status-pill" id="conn-status">✓ Conectado</span>
+    </div>
+  </div>
+
+  <!-- Pestañas de navegación -->
+  <div class="admin-tabs">
+    <button class="admin-tab active" data-tab="fanarts" onclick="switchAdminTab('fanarts')">🖼️ Fanarts</button>
+    <button class="admin-tab" data-tab="lore"    onclick="switchAdminTab('lore')">📖 Lore</button>
+    <button class="admin-tab" data-tab="juegos"  onclick="switchAdminTab('juegos')">🎮 Juegos</button>
+    <button class="admin-tab" data-tab="reglas"  onclick="switchAdminTab('reglas')">📋 Reglas</button>
+    <button class="admin-tab" data-tab="musica"  onclick="switchAdminTab('musica')">🎵 Música</button>
+    <button class="admin-tab" data-tab="chibi"   onclick="switchAdminTab('chibi')">🐑 Chibi</button>
+  </div>
+
+  <!-- ===== FANARTS ===== -->
+  <div class="admin-section active" id="admintab-fanarts">
+    <div class="panel" id="publish-panel">
+      <div class="panel-title">🎨 Subir un nuevo fanart</div>
+    <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+      <input type="file" id="file-input" accept="image/*" onchange="handleFile(this.files[0])"/>
+      <div id="dropzone-empty">
+        <div class="dropzone-icon">🖼️</div>
+        <div class="dropzone-text">Arrastra tu imagen aquí o haz clic</div>
+        <div class="dropzone-sub">JPG, PNG, WEBP o GIF</div>
+      </div>
+      <div class="preview-wrap" id="preview-wrap">
+        <img id="preview-img" src="" alt="preview"/>
+        <div class="preview-name" id="preview-name"></div>
+      </div>
+    </div>
+
+    <div class="compress-bar" id="compress-bar">
+      <div class="compress-row">
+        <label>🗜️ Calidad de compresión:</label>
+        <input type="range" id="compress-quality" min="50" max="100" value="82" oninput="recompress()"/>
+        <span class="compress-val" id="compress-val">82%</span>
+      </div>
+      <div class="compress-info" id="compress-info"></div>
+    </div>
+
+    <div class="field" style="margin-top:1.2rem;">
+      <label>Título del fanart</label>
+      <input type="text" id="f-titulo" placeholder="Ej: LadyGowi en su cumpleaños" oninput="updateLivePreview()"/>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Artista</label>
+        <input type="text" id="f-artista" placeholder="@usuario_artista" oninput="updateLivePreview()"/>
+      </div>
+      <div class="field">
+        <label>Categoría</label>
+        <select id="f-categoria" onchange="updateLivePreview()"></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Dedicatoria / nota de la creadora (opcional)</label>
+      <textarea id="f-nota" placeholder="Ej: Imagen enviada por @artista para mi cumpleaños, ¡muchas gracias!" oninput="updateLivePreview()"></textarea>
+    </div>
+    <div class="checkbox-row" style="margin-bottom:1.2rem;">
+      <input type="checkbox" id="f-destacado"/>
+      <label for="f-destacado">Mostrar en el carrusel de destacados</label>
+    </div>
+    <button class="btn-primary" id="publish-btn" onclick="publish()">Publicar en la galería</button>
+    <div id="log"></div>
+
+    <div class="panel-title" style="margin-top:1.6rem;font-size:13px;">👁️ Así se verá en la galería</div>
+    <div class="live-preview-card" id="live-preview-card">
+      <div class="lp-img-wrap"><img id="lp-img" alt=""/><div class="lp-img-empty" id="lp-img-empty">🌸</div></div>
+      <div class="lp-body">
+        <div class="lp-title" id="lp-title">Título del fanart</div>
+        <div class="lp-artist" id="lp-artist">@artista</div>
+        <div class="lp-foot">
+          <span class="card-cat" id="lp-cat">categoría</span>
+          <span class="card-date">Hoy</span>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="panel" id="manage-panel">
+      <div class="panel-title">📂 Imágenes publicadas</div>
+    <div class="refresh-row"><button class="btn-secondary" onclick="loadGalleryManage()">↻ Actualizar lista</button></div>
+    <div class="row2" style="margin-bottom:1rem;">
+      <div class="field" style="margin:0;">
+        <input type="text" id="manage-search" placeholder="Buscar por título o artista..." oninput="filterManageList()"/>
+      </div>
+      <div class="field" style="margin:0;">
+        <select id="manage-cat-filter" onchange="filterManageList()"><option value="all">Todas las categorías</option></select>
+      </div>
+    </div>
+    <div id="manage-list"><div class="manage-empty">Conecta tu token y pulsa "Actualizar lista" para ver las imágenes.</div></div>
+    </div>
+    <div class="panel" id="cat-panel">
+      <div class="panel-title">🏷️ Categorías</div>
+    <div class="category-manage" id="cat-chips"></div>
+    <div class="add-cat-row">
+      <input type="text" id="new-cat-input" placeholder="Nombre de categoría nueva, ej: wallpapers"/>
+      <button class="btn-secondary" onclick="addCategory()">Agregar</button>
+    </div>
+    <div class="hint" style="margin-top:10px;">Las categorías que borres aquí no eliminan imágenes ya publicadas, pero esas imágenes dejarán de tener un botón de filtro visible hasta que la categoría exista de nuevo.</div>
+    </div>
+  </div>
+
+  <!-- ===== LORE ===== -->
+  <div class="admin-section" id="admintab-lore">
+    <div class="panel">
+      <div class="panel-title">📖 Lore — ¿Quién es LadyGowi?</div>
+      <div class="refresh-row"><button class="btn-secondary" onclick="loadLore()">↻ Cargar texto actual</button></div>
+      <div class="field">
+        <label>Descripción / Bio</label>
+        <textarea id="lore-quien-input" rows="5" placeholder="Describe a LadyGowi aquí..."></textarea>
+      </div>
+      <button class="btn-primary" onclick="saveLore()">Guardar bio</button>
+      <div id="lore-log" style="margin-top:.5rem"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">💜 Metas</div>
+      <div id="lore-metas-list"><div class="manage-empty">Carga el lore primero.</div></div>
+      <div class="field" style="margin-top:1rem">
+        <label>Ícono (emoji)</label>
+        <input type="text" id="meta-ico" placeholder="🎯" style="width:80px"/>
+      </div>
+      <div class="field">
+        <label>Texto de la meta</label>
+        <input type="text" id="meta-txt" placeholder="Ej: Llegar a 1000 seguidores"/>
+      </div>
+      <button class="btn-primary" onclick="addMeta()">Agregar meta</button>
+    </div>
+  </div>
+
+  <!-- ===== JUEGOS ===== -->
+  <div class="admin-section" id="admintab-juegos">
+    <div class="panel" id="games-panel">
+      <div class="panel-title">🎮 Juegos</div>
+    <div class="refresh-row"><button class="btn-secondary" onclick="loadGamesManage()">↻ Actualizar lista</button></div>
+    <div id="games-list"><div class="manage-empty">Conecta tu token y pulsa "Actualizar lista".</div></div>
+    <div class="field" style="margin-top:1rem">
+      <label>Nombre del juego</label>
+      <input type="text" id="game-titulo" placeholder="Ej: Minecraft"/>
+    </div>
+    <div class="field">
+      <label>Portada del juego (imagen)</label>
+      <input type="file" id="game-imagen" accept="image/*"/>
+      <div class="hint">Se sube a imagenes/juegos/ en tu repositorio. Recomendado: proporción 3:4 (portrait)</div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Nota (1 a 5 ovejas 🐑)</label>
+        <select id="game-nota">
+          <option value="1">🐑 (1/5)</option>
+          <option value="2">🐑🐑 (2/5)</option>
+          <option value="3" selected>🐑🐑🐑 (3/5)</option>
+          <option value="4">🐑🐑🐑🐑 (4/5)</option>
+          <option value="5">🐑🐑🐑🐑🐑 (5/5)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>¿Lo recomienda?</label>
+        <select id="game-rec">
+          <option value="si">✅ Sí recomienda</option>
+          <option value="tal" selected>🤔 Tal vez</option>
+          <option value="no">❌ No recomienda</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Comentario (opcional)</label>
+      <textarea id="game-nota-texto" placeholder="Ej: Muy divertido, lo pasamos genial en stream 💜"></textarea>
+    </div>
+    <button class="btn-primary" onclick="addGame()">Agregar juego</button>
+
+    <div style="border-top:.5px solid var(--border-c);margin-top:1.6rem;padding-top:1.2rem">
+      <div class="panel-title" style="font-size:13px;margin-bottom:.8rem">🐑 Iconos de oveja (para las calificaciones)</div>
+      <div class="refresh-row"><button class="btn-secondary" onclick="loadSheepIcons()">↻ Ver iconos actuales</button></div>
+      <div id="sheep-icons-list"><div class="manage-empty">Pulsa "Ver iconos actuales" para verlos.</div></div>
+      <div class="field" style="margin-top:1rem">
+        <label>Agregar nuevo icono de oveja</label>
+        <input type="file" id="sheep-icon-file" accept="image/png,image/gif,image/webp"/>
+        <div class="hint">PNG con fondo transparente recomendado. Se guardará en imagenes/ovejas/</div>
+      </div>
+      <button class="btn-primary" onclick="addSheepIcon()">Agregar icono</button>
+    </div>
+    </div>
+  </div>
+
+  <!-- ===== REGLAS ===== -->
+  <div class="admin-section" id="admintab-reglas">
+    <div class="panel">
+      <div class="panel-title">📋 Reglas — próximamente</div>
+      <div class="manage-empty" style="padding:1rem 0">La edición de reglas desde el panel está en desarrollo. Por ahora edítalas directamente en el código del index.html en la sección <code>tab-reglas</code>.</div>
+    </div>
+  </div>
+
+  <!-- ===== MÚSICA ===== -->
+  <div class="admin-section" id="admintab-musica">
+    <div class="panel" id="music-panel">
+      <div class="panel-title">🎵 Música de la página</div>
+    <div class="refresh-row"><button class="btn-secondary" onclick="loadMusicManage()">↻ Actualizar lista</button></div>
+    <div id="music-list"><div class="manage-empty">Conecta tu token y pulsa "Actualizar lista" para ver las canciones.</div></div>
+    <div class="field" style="margin-top:1rem;">
+      <label>Título de la canción</label>
+      <input type="text" id="song-titulo" placeholder="Ej: LadyGowi — música 2"/>
+    </div>
+    <div class="field">
+      <label>Link o ID de YouTube</label>
+      <input type="text" id="song-url" placeholder="https://youtube.com/watch?v=xxxxxxxxxxx  ó  el ID solo"/>
+      <div class="hint">Pega el link completo del video, la app saca el ID sola.</div>
+    </div>
+    <button class="btn-primary" onclick="addSong()">Agregar canción</button>
+    </div>
+  </div>
+
+  <!-- ===== CHIBI ===== -->
+  <div class="admin-section" id="admintab-chibi">
+    <div class="panel" id="sounds-panel">
+      <div class="panel-title">🐑 Sonidos (chibi y campana)</div>
+    <div class="refresh-row"><button class="btn-secondary" onclick="loadSoundsManage()">↻ Actualizar lista</button></div>
+    <div id="sounds-list"><div class="manage-empty">Conecta tu token y pulsa "Actualizar lista" para ver los sonidos.</div></div>
+    <div class="field" style="margin-top:1rem;">
+      <label>Nombre del sonido</label>
+      <input type="text" id="sound-nombre" placeholder="Ej: Oveja contenta"/>
+    </div>
+    <div class="field">
+      <label>¿Dónde suena?</label>
+      <select id="sound-tipo">
+        <option value="chibi">Al tocar la chibi (se elige uno al azar)</option>
+        <option value="campana">Al tocar el título/campana (se elige uno al azar)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Archivo de audio (mp3)</label>
+      <input type="file" id="sound-file" accept="audio/mp3,audio/mpeg"/>
+      <div class="hint">Se sube a la carpeta sonidos/ de tu repositorio.</div>
+    </div>
+    <div class="field">
+      <label>Peso (qué tan seguido suena vs. los demás de su mismo tipo)</label>
+      <input type="number" id="sound-peso" value="1" min="1" max="20" step="1"/>
+      <div class="hint">1 = normal. Un sonido con peso 3 sonará 3 veces más seguido que uno con peso 1.</div>
+    </div>
+    <button class="btn-primary" onclick="addSound()">Agregar sonido</button>
+    </div>
+    <div class="panel" id="phrases-panel">
+      <div class="panel-title">💬 Frases de la chibi</div>
+    <div class="refresh-row"><button class="btn-secondary" onclick="loadPhrasesManage()">↻ Actualizar lista</button></div>
+    <div id="phrases-list"><div class="manage-empty">Conecta tu token y pulsa "Actualizar lista" para ver las frases.</div></div>
+    <div class="field" style="margin-top:1rem;">
+      <label>Nueva frase</label>
+      <textarea id="phrase-texto" placeholder="Ej: ¡Hoy es un día hermoso! 🌸"></textarea>
+    </div>
+    <div class="field">
+      <label>Peso (qué tan seguido aparece vs. las demás)</label>
+      <input type="number" id="phrase-peso" value="1" min="1" max="20" step="1"/>
+      <div class="hint">1 = normal. Una frase con peso 3 saldrá 3 veces más seguido que una con peso 1.</div>
+    </div>
+    <button class="btn-primary" onclick="addPhrase()">Agregar frase</button>
+    </div>
+  </div>
+</div>
+<script>
+/* ==== PESTAÑAS DEL ADMIN ==== */
+function switchAdminTab(tab){
+  document.querySelectorAll(".admin-section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".admin-tab").forEach(b=>b.classList.remove("active"));
+  const section=document.getElementById("admintab-"+tab);
+  const btn=document.querySelector(`.admin-tab[data-tab="${tab}"]`);
+  if(section) section.classList.add("active");
+  if(btn) btn.classList.add("active");
+  if(tab==="fanarts"){ loadGalleryManage(); loadCategoriesFromRepo(); }
+  if(tab==="lore"){ loadLore(); }
+  if(tab==="musica"){ loadMusicManage(); }
+  if(tab==="chibi"){ loadSoundsManage(); loadPhrasesManage(); }
+  if(tab==="juegos"){ loadGamesManage(); loadSheepIcons(); }
+}
+
+/* ==== LOCK SCREEN (capa simple, no es seguridad real — ver nota) ==== */
+const LOCK_KEY="ladygowi_admin_lock";
+async function sha256(text){
+  const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+async function tryUnlock(){
+  const val=document.getElementById("lock-pass").value;
+  const stored=localStorage.getItem(LOCK_KEY);
+  const errEl=document.getElementById("lock-err");
+  if(!val){ errEl.textContent="Escribe una contraseña."; return; }
+  if(!stored){
+    // primera vez en este navegador: esta contraseña queda guardada
+    localStorage.setItem(LOCK_KEY, await sha256(val));
+    unlockUI(); return;
+  }
+  if(await sha256(val)===stored){ unlockUI(); }
+  else{ errEl.textContent="Contraseña incorrecta."; }
+}
+function unlockUI(){
+  document.body.classList.remove("locked");
+  document.getElementById("lock-screen").classList.add("hidden");
+}
+(function initLock(){
+  const stored=localStorage.getItem(LOCK_KEY);
+  if(stored){
+    document.querySelector(".lock-box p").textContent="Panel privado · ingresa la contraseña para continuar";
+  }else{
+    document.querySelector(".lock-box p").textContent="Primera vez aquí: escribe la contraseña que quieras usar de ahora en adelante en este navegador.";
+  }
+})();
+
+/* ==== CONFIG ==== */
+const CFG_KEY="ladygowi_admin_cfg";
+let cfg={token:"",owner:"chibizuki2",repo:"Ensayo-gow"};
+try{ const s=localStorage.getItem(CFG_KEY); if(s) cfg=JSON.parse(s); }catch(e){}
+
+document.getElementById("gh-token").value=cfg.token||"";
+document.getElementById("gh-owner").value=cfg.owner||"chibizuki2";
+document.getElementById("gh-repo").value =cfg.repo ||"Ensayo-gow";
+if(cfg.token) document.getElementById("conn-status").classList.add("show");
+
+function saveConfig(){
+  cfg.token=document.getElementById("gh-token").value.trim();
+  cfg.owner=document.getElementById("gh-owner").value.trim();
+  cfg.repo =document.getElementById("gh-repo").value.trim();
+  localStorage.setItem(CFG_KEY,JSON.stringify(cfg));
+  const pill=document.getElementById("conn-status");
+  if(cfg.token){ pill.classList.add("show"); logLine("Conexión guardada en este navegador.","ok"); }
+}
+
+/* ==== CATEGORÍAS ==== */
+let CATEGORIES=["fanart","emotes","memes"];
+
+function renderCatSelect(){
+  const sel=document.getElementById("f-categoria"); sel.innerHTML="";
+  CATEGORIES.forEach(c=>{ const o=document.createElement("option"); o.value=o.textContent=c; sel.appendChild(o); });
+  if(typeof updateLivePreview==="function") updateLivePreview();
+}
+function renderCatChips(){
+  const wrap=document.getElementById("cat-chips"); wrap.innerHTML="";
+  CATEGORIES.forEach(c=>{
+    const chip=document.createElement("div"); chip.className="cat-chip";
+    chip.innerHTML=`<span>${c}</span><button onclick="removeCategory('${c}')">✕</button>`;
+    wrap.appendChild(chip);
+  });
+}
+function addCategory(){
+  const input=document.getElementById("new-cat-input");
+  const val=input.value.trim().toLowerCase().replace(/\s+/g,"-");
+  if(!val) return;
+  if(CATEGORIES.includes(val)){ alert("Esa categoría ya existe."); return; }
+  CATEGORIES.push(val); input.value="";
+  renderCatChips(); renderCatSelect();
+  saveCategoriesToData();
+}
+function removeCategory(c){
+  if(CATEGORIES.length<=1){ alert("Debe quedar al menos una categoría."); return; }
+  CATEGORIES=CATEGORIES.filter(x=>x!==c);
+  renderCatChips(); renderCatSelect();
+  saveCategoriesToData();
+}
+async function saveCategoriesToData(){
+  if(!cfg.token) return;
+  try{
+    const file=await getFile("data.js");
+    const content=base64ToUtf8(file.content);
+    const newLine=`const CATEGORIES = [${CATEGORIES.map(c=>`"${c}"`).join(",")}];`;
+    const newContent=content.replace(/const CATEGORIES = \[[^\]]*\];/, newLine);
+    await freshPut("data.js",utf8ToBase64(newContent),"Actualiza categorías");
+  }catch(e){ console.warn("No se pudieron guardar las categorías:", e.message); }
+}
+renderCatChips(); renderCatSelect();
+
+/* ==== DROPZONE ==== */
+let currentFile=null;
+let _originalImage=null; // guardamos la imagen original para recomprimir sin recargar
+
+const dropzone=document.getElementById("dropzone");
+["dragenter","dragover"].forEach(ev=>dropzone.addEventListener(ev,e=>{ e.preventDefault(); dropzone.classList.add("drag"); }));
+["dragleave","drop"].forEach(ev=>dropzone.addEventListener(ev,e=>{ e.preventDefault(); dropzone.classList.remove("drag"); }));
+dropzone.addEventListener("drop",e=>{ const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
+
+function handleFile(file){
+  if(!file||!file.type.startsWith("image/")){ alert("Por favor selecciona un archivo de imagen."); return; }
+  _originalImage={ name:sanitizeFilename(file.name.replace(/\.\w+$/,".webp")), sizeMB:file.size, mime:file.type };
+  const reader=new FileReader();
+  reader.onload=e=>{
+    _originalImage.dataUrl=e.target.result;
+    document.getElementById("preview-img").src=e.target.result;
+    document.getElementById("preview-name").textContent=file.name;
+    document.getElementById("dropzone-empty").style.display="none";
+    document.getElementById("preview-wrap").classList.add("show");
+    document.getElementById("compress-bar").classList.add("show");
+    recompress();
+    updateLivePreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function recompress(){
+  if(!_originalImage?.dataUrl) return;
+  const quality=parseInt(document.getElementById("compress-quality").value)/100;
+  document.getElementById("compress-val").textContent=Math.round(quality*100)+"%";
+  const img=new Image();
+  img.onload=()=>{
+    const canvas=document.createElement("canvas");
+    // max 1800px on longest side to avoid huge files
+    const maxSide=1800;
+    let w=img.width, h=img.height;
+    if(w>maxSide||h>maxSide){
+      if(w>h){ h=Math.round(h*maxSide/w); w=maxSide; }
+      else{ w=Math.round(w*maxSide/h); h=maxSide; }
+    }
+    canvas.width=w; canvas.height=h;
+    canvas.getContext("2d").drawImage(img,0,0,w,h);
+    const dataUrl=canvas.toDataURL("image/webp",quality);
+    const base64=dataUrl.split(",")[1];
+    const compressedKB=Math.round(base64.length*0.75/1024);
+    const originalKB=Math.round(_originalImage.sizeMB/1024);
+    const saving=Math.round((1-compressedKB/originalKB)*100);
+    currentFile={ name:_originalImage.name, base64, mime:"image/webp" };
+    document.getElementById("compress-info").innerHTML=`
+      <span class="ci-before">Original: ${originalKB>1024?(originalKB/1024).toFixed(1)+"MB":originalKB+"KB"}</span>
+      <span class="ci-after">→ Comprimida: ${compressedKB}KB</span>
+      ${saving>0?`<span class="ci-saving">✓ ${saving}% más liviana</span>`:"<span style='color:var(--text2)'>Sin cambio significativo</span>"}
+      <span style="color:var(--text2)">(${w}×${h}px)</span>`;
+    document.getElementById("preview-img").src=dataUrl;
+    updateLivePreview();
+  };
+  img.src=_originalImage.dataUrl;
+}
+function updateLivePreview(){
+  const titulo=document.getElementById("f-titulo").value.trim();
+  const artista=document.getElementById("f-artista").value.trim();
+  const categoria=document.getElementById("f-categoria").value;
+  const previewSrc=document.getElementById("preview-img").src;
+  document.getElementById("lp-title").textContent=titulo||"Título del fanart";
+  document.getElementById("lp-artist").textContent=artista?("@"+artista.replace(/^@/,"")):"@artista";
+  document.getElementById("lp-cat").textContent=categoria||"categoría";
+  const lpImg=document.getElementById("lp-img"), lpEmpty=document.getElementById("lp-img-empty");
+  if(previewSrc && previewSrc.startsWith("data:")){ lpImg.src=previewSrc; lpImg.style.display="block"; lpEmpty.style.display="none"; }
+  else{ lpImg.style.display="none"; lpEmpty.style.display="block"; }
+}
+function sanitizeFilename(name){
+  return Date.now()+"-"+name.toLowerCase().replace(/[^a-z0-9.\-]/g,"-").replace(/-+/g,"-");
+}
+
+/* ==== GITHUB API ==== */
+const API="https://api.github.com";
+
+async function ghRequest(path,options={}){
+  const res=await fetch(`${API}${path}`,{
+    ...options,
+    headers:{"Authorization":`Bearer ${cfg.token}`,"Accept":"application/vnd.github+json",...(options.headers||{})}
+  });
+  if(!res.ok){ const b=await res.text(); throw new Error(`GitHub API error ${res.status}: ${b.slice(0,200)}`); }
+  return res.json();
+}
+const getFile=path=>ghRequest(`/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(path)}`);
+const putFile=(path,content,message,sha)=>ghRequest(`/repos/${cfg.owner}/${cfg.repo}/contents/${path}`,{
+  method:"PUT",body:JSON.stringify({message,content,...(sha?{sha}:{})})
+});
+
+/* Siempre obtiene el SHA fresco antes de escribir — evita el error 409 */
+async function freshPut(path, content, message){
+  /* Si es data.js, valida la sintaxis JS antes de guardar */
+  if(path==="data.js"){
+    try{
+      const decoded = base64ToUtf8(content);
+      new Function(decoded); // lanza error si hay sintaxis incorrecta
+    }catch(e){
+      throw new Error(`❌ El archivo data.js quedaría con un error de sintaxis y no se guardó.\nDetalle: ${e.message}\n\nRevisa los datos que intentas guardar (caracteres especiales, comillas, etc.)`);
+    }
+  }
+  const current = await getFile(path);
+  return putFile(path, content, message, current.sha);
+}
+const deleteFile=(path,message,sha)=>ghRequest(`/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(path)}`,{
+  method:"DELETE",body:JSON.stringify({message,sha})
+});
+const utf8ToBase64=str=>btoa(unescape(encodeURIComponent(str)));
+const base64ToUtf8=str=>decodeURIComponent(escape(atob(str)));
+const esc=s=>(s||"").replace(/"/g,'\\"');
+const unesc=s=>(s||"").replace(/\\"/g,'"');
+
+/* ==== GESTIONAR IMÁGENES ==== */
+const IMG_LINE_RE=/^(\s*)\{\s*src:"((?:\\.|[^"\\])*)",\s*titulo:"((?:\\.|[^"\\])*)",\s*artista:"((?:\\.|[^"\\])*)",\s*categoria:"((?:\\.|[^"\\])*)",\s*fecha:"((?:\\.|[^"\\])*)",\s*placeholder:"((?:\\.|[^"\\])*)",\s*nota:"((?:\\.|[^"\\])*)",\s*destacado:(true|false)\s*\},?\s*$/;
+
+async function loadGalleryManage(){
+  const box=document.getElementById("manage-list");
+  if(!cfg.token){ box.innerHTML='<div class="manage-empty" style="color:var(--err)">Conecta tu token primero.</div>'; return; }
+  box.innerHTML='<div class="manage-empty">Cargando...</div>';
+  try{
+    const file=await getFile("data.js");
+    window._dataFile=file;
+    const content=base64ToUtf8(file.content);
+    window._dataLines=content.split("\n");
+    const items=[];
+    window._dataLines.forEach((line,i)=>{
+      const m=line.match(IMG_LINE_RE);
+      if(m) items.push({lineIndex:i,src:unesc(m[2]),titulo:unesc(m[3]),artista:unesc(m[4]),categoria:m[5],fecha:m[6],placeholder:unesc(m[7]),nota:unesc(m[8]),destacado:m[9]==="true"});
+    });
+    window._galleryItems=items;
+    renderManageList(items);
+  }catch(e){ box.innerHTML=`<div class="manage-empty" style="color:var(--err)">Error: ${e.message}</div>`; }
+}
+
+function renderManageList(items){
+  const box=document.getElementById("manage-list");
+  if(!items.length){ box.innerHTML='<div class="manage-empty">Aún no hay imágenes publicadas.</div>'; return; }
+  populateManageCatFilter(items);
+  applyManageFilter(items);
+}
+
+function populateManageCatFilter(items){
+  const sel=document.getElementById("manage-cat-filter");
+  const current=sel.value||"all";
+  const cats=Array.from(new Set(items.map(i=>i.categoria))).sort();
+  sel.innerHTML='<option value="all">Todas las categorías</option>';
+  cats.forEach(c=>{ const o=document.createElement("option"); o.value=o.textContent=c; sel.appendChild(o); });
+  sel.value=cats.includes(current)?current:"all";
+}
+
+function filterManageList(){
+  if(window._galleryItems) applyManageFilter(window._galleryItems);
+}
+
+function applyManageFilter(items){
+  const box=document.getElementById("manage-list");
+  const q=(document.getElementById("manage-search").value||"").trim().toLowerCase();
+  const cat=document.getElementById("manage-cat-filter").value;
+  const filtered=items.filter(it=>{
+    const matchesCat = cat==="all" || it.categoria===cat;
+    const matchesQ = !q || it.titulo.toLowerCase().includes(q) || it.artista.toLowerCase().includes(q);
+    return matchesCat && matchesQ;
+  });
+  if(!filtered.length){ box.innerHTML='<div class="manage-empty">No se encontraron imágenes con ese filtro/búsqueda.</div>'; return; }
+  box.innerHTML="";
+  filtered.forEach(it=>{
+    const thumb=`https://${cfg.owner}.github.io/${cfg.repo}/${it.src}`;
+    const div=document.createElement("div");
+    div.innerHTML=`
+      <div class="manage-item">
+        <img src="${thumb}" onerror="this.style.visibility='hidden'"/>
+        <div class="manage-info">
+          <div class="mi-title">${it.titulo}</div>
+          <div class="mi-sub">${it.artista} · ${it.categoria}</div>
+        </div>
+        <div class="manage-actions">
+          <button class="icon-btn" title="Editar" onclick="toggleEdit(${it.lineIndex})">✎</button>
+          <button class="icon-btn danger" title="Eliminar" onclick="deleteImage(${it.lineIndex})">🗑</button>
+        </div>
+      </div>
+      <div class="edit-form" id="edit-${it.lineIndex}">
+        <div class="field"><label>Título</label><input type="text" id="e-titulo-${it.lineIndex}" value="${it.titulo.replace(/"/g,'&quot;')}"/></div>
+        <div class="row2">
+          <div class="field"><label>Artista</label><input type="text" id="e-artista-${it.lineIndex}" value="${it.artista.replace(/"/g,'&quot;')}"/></div>
+          <div class="field"><label>Categoría</label><select id="e-categoria-${it.lineIndex}"></select></div>
+        </div>
+        <div class="field"><label>Nota</label><textarea id="e-nota-${it.lineIndex}">${it.nota}</textarea></div>
+        <div class="checkbox-row" style="margin-bottom:1rem;">
+          <input type="checkbox" id="e-destacado-${it.lineIndex}" ${it.destacado?"checked":""}/>
+          <label for="e-destacado-${it.lineIndex}">Destacado</label>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-primary" style="flex:1" onclick="saveImageEdit(${it.lineIndex})">Guardar cambios</button>
+          <button class="btn-secondary" onclick="toggleEdit(${it.lineIndex})">Cancelar</button>
+        </div>
+      </div>`;
+    box.appendChild(div);
+    const sel=div.querySelector(`#e-categoria-${it.lineIndex}`);
+    CATEGORIES.forEach(c=>{ const o=document.createElement("option"); o.value=o.textContent=c; if(c===it.categoria)o.selected=true; sel.appendChild(o); });
+  });
+}
+
+function toggleEdit(lineIndex){
+  document.getElementById(`edit-${lineIndex}`).classList.toggle("show");
+}
+
+async function saveImageEdit(lineIndex){
+  const item=window._galleryItems.find(x=>x.lineIndex===lineIndex);
+  const indent=window._dataLines[lineIndex].match(/^(\s*)/)[1];
+  const titulo=document.getElementById(`e-titulo-${lineIndex}`).value.trim();
+  const artista=document.getElementById(`e-artista-${lineIndex}`).value.trim();
+  const categoria=document.getElementById(`e-categoria-${lineIndex}`).value;
+  const nota=document.getElementById(`e-nota-${lineIndex}`).value.trim();
+  const destacado=document.getElementById(`e-destacado-${lineIndex}`).checked;
+  const newLine=`${indent}{ src:"${item.src}", titulo:"${esc(titulo)}", artista:"${esc(artista)}", categoria:"${categoria}", fecha:"${item.fecha}", placeholder:"${item.placeholder}", nota:"${esc(nota)}", destacado:${destacado} },`;
+  const lines=window._dataLines.slice(); lines[lineIndex]=newLine;
+  try{
+    await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Edita fanart: ${titulo}`);
+    await loadGalleryManage();
+  }catch(e){ alert("Error al guardar: "+e.message); }
+}
+
+async function deleteImage(lineIndex){
+  const item=window._galleryItems.find(x=>x.lineIndex===lineIndex);
+  if(!confirm(`¿Eliminar "${item.titulo}"? Esto la quita de la galería y borra el archivo de imagen.`)) return;
+  try{
+    const lines=window._dataLines.slice(); lines.splice(lineIndex,1);
+    await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Elimina fanart: ${item.titulo}`);
+    try{ const imgFile=await getFile(item.src); await deleteFile(item.src,`Elimina archivo de imagen: ${item.titulo}`,imgFile.sha); }catch(e){}
+    await loadGalleryManage();
+  }catch(e){ alert("Error al eliminar: "+e.message); }
+}
+
+/* ==== GESTIONAR MÚSICA ==== */
+const SONG_LINE_RE=/^(\s*)\{\s*titulo:"((?:\\.|[^"\\])*)",\s*youtubeId:"((?:\\.|[^"\\])*)"\s*\},?\s*$/;
+
+function extractYoutubeId(input){
+  input=(input||"").trim();
+  let m=input.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+  if(m) return m[1];
+  if(/^[a-zA-Z0-9_-]{11}$/.test(input)) return input;
+  return null;
+}
+
+async function loadMusicManage(){
+  const box=document.getElementById("music-list");
+  if(!cfg.token){ box.innerHTML='<div class="manage-empty" style="color:var(--err)">Conecta tu token primero.</div>'; return; }
+  box.innerHTML='<div class="manage-empty">Cargando...</div>';
+  try{
+    const file=await getFile("data.js");
+    window._dataFile=file;
+    const content=base64ToUtf8(file.content);
+    window._dataLines=content.split("\n");
+    const songs=[];
+    window._dataLines.forEach((line,i)=>{
+      const m=line.match(SONG_LINE_RE);
+      if(m) songs.push({lineIndex:i,titulo:unesc(m[2]),youtubeId:m[3]});
+    });
+    window._songItems=songs;
+    renderMusicList(songs);
+  }catch(e){ box.innerHTML=`<div class="manage-empty" style="color:var(--err)">Error: ${e.message}</div>`; }
+}
+
+function renderMusicList(songs){
+  const box=document.getElementById("music-list");
+  if(!songs.length){ box.innerHTML='<div class="manage-empty">No hay canciones aún.</div>'; return; }
+  box.innerHTML="";
+  songs.forEach(s=>{
+    const div=document.createElement("div");
+    div.className="song-item";
+    div.innerHTML=`
+      <div class="song-info">
+        <div class="si-title">🎵 ${s.titulo}</div>
+        <div class="si-id">ID: ${s.youtubeId}</div>
+      </div>
+      <button class="icon-btn danger" title="Eliminar" onclick="deleteSong(${s.lineIndex})">🗑</button>`;
+    box.appendChild(div);
+  });
+}
+
+async function deleteSong(lineIndex){
+  const song=window._songItems.find(x=>x.lineIndex===lineIndex);
+  if(window._songItems.length<=1){ alert("Debe quedar al menos una canción."); return; }
+  if(!confirm(`¿Eliminar la canción "${song.titulo}"?`)) return;
+  try{
+    const lines=window._dataLines.slice(); lines.splice(lineIndex,1);
+    await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Elimina canción: ${song.titulo}`);
+    await loadMusicManage();
+  }catch(e){ alert("Error al eliminar: "+e.message); }
+}
+
+async function addSong(){
+  if(!cfg.token){ alert("Conecta tu token primero."); return; }
+  const titulo=document.getElementById("song-titulo").value.trim();
+  const url=document.getElementById("song-url").value.trim();
+  const youtubeId=extractYoutubeId(url);
+  if(!titulo||!youtubeId){ alert("Escribe un título y un link/ID de YouTube válido."); return; }
+  try{
+    const file=await getFile("data.js");
+    const content=base64ToUtf8(file.content);
+    const marker="const CANCIONES = [\n";
+    const idx=content.indexOf(marker);
+    if(idx===-1) throw new Error("No se encontró el array CANCIONES.");
+    const newLine=`  { titulo:"${esc(titulo)}", youtubeId:"${youtubeId}" },\n`;
+    const newContent=content.slice(0,idx+marker.length)+newLine+content.slice(idx+marker.length);
+    await freshPut("data.js",utf8ToBase64(newContent),`Agrega canción: ${titulo}`);
+    document.getElementById("song-titulo").value="";
+    document.getElementById("song-url").value="";
+    await loadMusicManage();
+  }catch(e){ alert("Error al agregar: "+e.message); }
+}
+
+/* ==== GESTIONAR SONIDOS ==== */
+const SOUND_LINE_RE=/^(\s*)\{\s*tipo:"((?:\\.|[^"\\])*)",\s*nombre:"((?:\\.|[^"\\])*)",\s*archivo:"((?:\\.|[^"\\])*)"\s*(?:,\s*peso:(\d+))?\s*\},?\s*$/;
+
+async function loadSoundsManage(){
+  const box=document.getElementById("sounds-list");
+  if(!cfg.token){ box.innerHTML='<div class="manage-empty" style="color:var(--err)">Conecta tu token primero.</div>'; return; }
+  box.innerHTML='<div class="manage-empty">Cargando...</div>';
+  try{
+    const file=await getFile("data.js");
+    window._dataFile=file;
+    const content=base64ToUtf8(file.content);
+    window._dataLines=content.split("\n");
+    const sounds=[];
+    window._dataLines.forEach((line,i)=>{
+      const m=line.match(SOUND_LINE_RE);
+      if(m) sounds.push({lineIndex:i,tipo:m[2],nombre:unesc(m[3]),archivo:m[4],peso:m[5]?parseInt(m[5]):1});
+    });
+    window._soundItems=sounds;
+    renderSoundsList(sounds);
+  }catch(e){ box.innerHTML=`<div class="manage-empty" style="color:var(--err)">Error: ${e.message}</div>`; }
+}
+
+function renderSoundsList(sounds){
+  const box=document.getElementById("sounds-list");
+  if(!sounds.length){ box.innerHTML='<div class="manage-empty">No hay sonidos aún.</div>'; return; }
+  box.innerHTML="";
+  ["chibi","campana"].forEach(tipo=>{
+    const grupo=sounds.filter(s=>s.tipo===tipo);
+    if(!grupo.length) return;
+    const total=grupo.reduce((s,x)=>s+x.peso,0);
+    grupo.forEach(s=>{
+      const div=document.createElement("div");
+      div.className="song-item";
+      const tipoLabel = tipo==="chibi" ? "🐑 Chibi" : "🔔 Título/campana";
+      const pct = Math.round((s.peso/total)*100);
+      div.innerHTML=`
+        <div class="song-info">
+          <div class="si-title">${tipoLabel} — ${s.nombre}</div>
+          <div class="si-id">${s.archivo} · peso ${s.peso} (~${pct}% de las veces)</div>
+        </div>
+        <button class="icon-btn" title="Escuchar" onclick="new Audio('https://${cfg.owner}.github.io/${cfg.repo}/${s.archivo}').play()">▶</button>
+        <button class="icon-btn danger" title="Eliminar" onclick="deleteSound(${s.lineIndex})">🗑</button>`;
+      box.appendChild(div);
+    });
+  });
+}
+
+async function deleteSound(lineIndex){
+  const sound=window._soundItems.find(x=>x.lineIndex===lineIndex);
+  const sameType=window._soundItems.filter(x=>x.tipo===sound.tipo);
+  if(sameType.length<=1){ alert(`Debe quedar al menos un sonido de tipo "${sound.tipo}".`); return; }
+  if(!confirm(`¿Eliminar el sonido "${sound.nombre}"? (el archivo de audio seguirá en el repositorio, solo se quita de la lista)`)) return;
+  try{
+    const lines=window._dataLines.slice(); lines.splice(lineIndex,1);
+    await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Elimina sonido: ${sound.nombre}`);
+    await loadSoundsManage();
+  }catch(e){ alert("Error al eliminar: "+e.message); }
+}
+
+async function addSound(){
+  if(!cfg.token){ alert("Conecta tu token primero."); return; }
+  const nombre=document.getElementById("sound-nombre").value.trim();
+  const tipo=document.getElementById("sound-tipo").value;
+  const peso=Math.max(1,parseInt(document.getElementById("sound-peso").value)||1);
+  const fileInput=document.getElementById("sound-file");
+  const file=fileInput.files[0];
+  if(!nombre||!file){ alert("Escribe un nombre y selecciona un archivo de audio."); return; }
+  try{
+    const base64 = await new Promise((res,rej)=>{
+      const reader=new FileReader();
+      reader.onload=e=>res(e.target.result.split(",")[1]);
+      reader.onerror=rej;
+      reader.readAsDataURL(file);
+    });
+    const cleanName = Date.now()+"-"+file.name.toLowerCase().replace(/[^a-z0-9.\-]/g,"-").replace(/-+/g,"-");
+    const soundPath = `sonidos/${cleanName}`;
+    await putFile(soundPath, base64, `Sube sonido: ${nombre}`);
+
+    const idxFile=await getFile("data.js");
+    const content=base64ToUtf8(idxFile.content);
+    const marker="const SONIDOS = [\n";
+    const idx=content.indexOf(marker);
+    if(idx===-1) throw new Error("No se encontró el array SONIDOS.");
+    const newLine=`  { tipo:"${tipo}", nombre:"${esc(nombre)}", archivo:"${soundPath}", peso:${peso} },\n`;
+    const newContent=content.slice(0,idx+marker.length)+newLine+content.slice(idx+marker.length);
+    await freshPut("data.js",utf8ToBase64(newContent),`Agrega sonido: ${nombre}`);
+
+    document.getElementById("sound-nombre").value="";
+    document.getElementById("sound-peso").value="1";
+    fileInput.value="";
+    await loadSoundsManage();
+  }catch(e){ alert("Error al agregar: "+e.message); }
+}
+
+/* ==== GESTIONAR FRASES DE LA CHIBI ==== */
+const PHRASE_LINE_RE=/^(\s*)\{\s*texto:"((?:\\.|[^"\\])*)",\s*peso:(\d+)\s*\},?\s*$/;
+
+async function loadPhrasesManage(){
+  const box=document.getElementById("phrases-list");
+  if(!cfg.token){ box.innerHTML='<div class="manage-empty" style="color:var(--err)">Conecta tu token primero.</div>'; return; }
+  box.innerHTML='<div class="manage-empty">Cargando...</div>';
+  try{
+    const file=await getFile("data.js");
+    window._dataFile=file;
+    const content=base64ToUtf8(file.content);
+    window._dataLines=content.split("\n");
+    const phrases=[];
+    window._dataLines.forEach((line,i)=>{
+      const m=line.match(PHRASE_LINE_RE);
+      if(m) phrases.push({lineIndex:i,texto:unesc(m[2]),peso:parseInt(m[3])});
+    });
+    window._phraseItems=phrases;
+    renderPhrasesList(phrases);
+  }catch(e){ box.innerHTML=`<div class="manage-empty" style="color:var(--err)">Error: ${e.message}</div>`; }
+}
+
+function renderPhrasesList(phrases){
+  const box=document.getElementById("phrases-list");
+  if(!phrases.length){ box.innerHTML='<div class="manage-empty">No hay frases aún.</div>'; return; }
+  box.innerHTML="";
+  const total=phrases.reduce((s,x)=>s+x.peso,0);
+  phrases.forEach(p=>{
+    const pct=Math.round((p.peso/total)*100);
+    const div=document.createElement("div");
+    div.className="song-item";
+    div.innerHTML=`
+      <div class="song-info">
+        <div class="si-title">💬 ${p.texto}</div>
+        <div class="si-id">peso ${p.peso} (~${pct}% de las veces)</div>
+      </div>
+      <button class="icon-btn danger" title="Eliminar" onclick="deletePhrase(${p.lineIndex})">🗑</button>`;
+    box.appendChild(div);
+  });
+}
+
+async function deletePhrase(lineIndex){
+  const phrase=window._phraseItems.find(x=>x.lineIndex===lineIndex);
+  if(window._phraseItems.length<=1){ alert("Debe quedar al menos una frase."); return; }
+  if(!confirm(`¿Eliminar la frase "${phrase.texto}"?`)) return;
+  try{
+    const lines=window._dataLines.slice(); lines.splice(lineIndex,1);
+    await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Elimina frase de la chibi`);
+    await loadPhrasesManage();
+  }catch(e){ alert("Error al eliminar: "+e.message); }
+}
+
+async function addPhrase(){
+  if(!cfg.token){ alert("Conecta tu token primero."); return; }
+  const texto=document.getElementById("phrase-texto").value.trim();
+  const peso=Math.max(1,parseInt(document.getElementById("phrase-peso").value)||1);
+  if(!texto){ alert("Escribe una frase."); return; }
+  try{
+    const file=await getFile("data.js");
+    const content=base64ToUtf8(file.content);
+    const marker="const CHIBI_FRASES = [\n";
+    const idx=content.indexOf(marker);
+    if(idx===-1) throw new Error("No se encontró el array CHIBI_FRASES.");
+    const newLine=`  { texto:"${esc(texto)}", peso:${peso} },\n`;
+    const newContent=content.slice(0,idx+marker.length)+newLine+content.slice(idx+marker.length);
+    await freshPut("data.js",utf8ToBase64(newContent),`Agrega frase de la chibi`);
+    document.getElementById("phrase-texto").value="";
+    document.getElementById("phrase-peso").value="1";
+    await loadPhrasesManage();
+  }catch(e){ alert("Error al agregar: "+e.message); }
+}
+
+/* ==== GESTIONAR ICONOS DE OVEJA ==== */
+const OVEJA_LINE_RE=/^(\s*)"(imagenes\/ovejas\/[^"]+)",?\s*$/;
+
+async function loadSheepIcons(){
+  const box=document.getElementById("sheep-icons-list");
+  if(!cfg.token){ box.innerHTML='<div class="manage-empty" style="color:var(--err)">Conecta tu token primero.</div>'; return; }
+  box.innerHTML='<div class="manage-empty">Cargando...</div>';
+  try{
+    const file=await getFile("data.js");
+    window._dataFile=file;
+    const content=base64ToUtf8(file.content);
+    window._dataLines=content.split("\n");
+    const icons=[];
+    window._dataLines.forEach((line,i)=>{
+      const m=line.match(OVEJA_LINE_RE);
+      if(m) icons.push({lineIndex:i, path:m[2]});
+    });
+    window._sheepIconItems=icons;
+    renderSheepIcons(icons);
+  }catch(e){ box.innerHTML=`<div class="manage-empty" style="color:var(--err)">Error: ${e.message}</div>`; }
+}
+
+function renderSheepIcons(icons){
+  const box=document.getElementById("sheep-icons-list");
+  if(!icons.length){ box.innerHTML='<div class="manage-empty">No hay iconos aún.</div>'; return; }
+  const grid=document.createElement("div"); grid.className="sheep-icons-grid";
+  icons.forEach(ic=>{
+    const name=ic.path.split("/").pop();
+    const url=`https://${cfg.owner}.github.io/${cfg.repo}/${ic.path}`;
+    const item=document.createElement("div"); item.className="sheep-icon-item";
+    item.innerHTML=`
+      <img src="${url}" onerror="this.style.opacity='.3'" alt="${name}"/>
+      <div class="si-name">${name}</div>
+      <button onclick="deleteSheepIcon(${ic.lineIndex})">🗑 Quitar</button>`;
+    grid.appendChild(item);
+  });
+  box.innerHTML="";
+  box.appendChild(grid);
+  if(icons.length<=1) box.insertAdjacentHTML("beforeend",'<div class="hint">Debe quedar al menos un icono.</div>');
+}
+
+async function deleteSheepIcon(lineIndex){
+  const icon=window._sheepIconItems.find(x=>x.lineIndex===lineIndex);
+  if(window._sheepIconItems.length<=1){ alert("Debe quedar al menos un icono de oveja."); return; }
+  if(!confirm(`¿Quitar el icono "${icon.path.split("/").pop()}" de la lista?`)) return;
+  try{
+    const lines=window._dataLines.slice(); lines.splice(lineIndex,1);
+    await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Quita icono oveja: ${icon.path}`);
+    await loadSheepIcons();
+  }catch(e){ alert("Error: "+e.message); }
+}
+
+async function addSheepIcon(){
+  if(!cfg.token){ alert("Conecta tu token primero."); return; }
+  const fileInput=document.getElementById("sheep-icon-file");
+  const file=fileInput.files[0];
+  if(!file){ alert("Selecciona una imagen primero."); return; }
+  try{
+    const base64=await new Promise((res,rej)=>{
+      const reader=new FileReader();
+      reader.onload=e=>res(e.target.result.split(",")[1]);
+      reader.onerror=rej;
+      reader.readAsDataURL(file);
+    });
+    const cleanName=Date.now()+"-"+file.name.toLowerCase().replace(/[^a-z0-9.\-]/g,"-").replace(/-+/g,"-");
+    const iconPath=`imagenes/ovejas/${cleanName}`;
+    await putFile(iconPath,base64,`Sube icono oveja: ${cleanName}`);
+
+    const idxFile=await getFile("data.js");
+    const content=base64ToUtf8(idxFile.content);
+    const marker='const OVEJA_IMGS = [\n';
+    const idx=content.indexOf(marker);
+    if(idx===-1) throw new Error("No se encontró el array OVEJA_IMGS.");
+    const newLine=`  "${iconPath}",\n`;
+    const newContent=content.slice(0,idx+marker.length)+newLine+content.slice(idx+marker.length);
+    await freshPut("data.js",utf8ToBase64(newContent),`Agrega icono oveja: ${cleanName}`);
+    fileInput.value="";
+    await loadSheepIcons();
+  }catch(e){ alert("Error al subir: "+e.message); }
+}
+
+/* ==== GESTIONAR LORE ==== */
+const LORE_QUIEN_RE=/^const LORE = \{[\s\S]*?quien: "((?:\\.|[^"\\])*)",/m;
+const LORE_META_RE=/^\s*\{\s*ico:"((?:\\.|[^"\\])*)",\s*txt:"((?:\\.|[^"\\]*))"(?:\s*)\}/gm;
+
+async function loadLore(){
+  if(!cfg.token){ alert("Conecta tu token primero."); return; }
+  try{
+    const file=await getFile("data.js");
+    window._dataFile=file;
+    const content=base64ToUtf8(file.content);
+    window._dataLines=content.split("\n");
+
+    const quienMatch=content.match(/quien:\s*"((?:\\.|[^"\\])*)"/);
+    if(quienMatch) document.getElementById("lore-quien-input").value=unesc(quienMatch[1]);
+
+    const metas=[];
+    let m;
+    const metaRe=/\{\s*ico:"((?:\\.|[^"\\])*)",\s*txt:"((?:\\.|[^"\\]*))"(?:\s*)\}/g;
+    while((m=metaRe.exec(content))!==null) metas.push({ico:unesc(m[1]),txt:unesc(m[2]),raw:m[0],idx:m.index});
+    window._loreMetaItems=metas;
+    renderMetasList(metas);
+  }catch(e){ alert("Error: "+e.message); }
+}
+
+function renderMetasList(metas){
+  const box=document.getElementById("lore-metas-list");
+  if(!metas.length){ box.innerHTML='<div class="manage-empty">No hay metas aún.</div>'; return; }
+  box.innerHTML="";
+  metas.forEach((m,i)=>{
+    const div=document.createElement("div"); div.className="song-item";
+    div.innerHTML=`<div class="song-info"><div class="si-title">${m.ico} ${m.txt}</div></div>
+    <button class="icon-btn danger" onclick="deleteMeta(${i})">🗑</button>`;
+    box.appendChild(div);
+  });
+}
+
+async function saveLore(){
+  if(!cfg.token){ alert("Conecta tu token primero."); return; }
+  const quien=document.getElementById("lore-quien-input").value.trim();
+  if(!quien){ alert("Escribe algo en la bio."); return; }
+  try{
+    const file=await getFile("data.js");
+    const content=base64ToUtf8(file.content);
+    const newContent=content.replace(/quien:\s*"(?:\\.|[^"\\])*"/, `quien: "${esc(quien)}"`);
+    await freshPut("data.js",utf8ToBase64(newContent),"Edita lore: bio");
+    document.getElementById("lore-log").textContent="✓ Bio guardada.";
+    setTimeout(()=>document.getElementById("lore-log").textContent="",3000);
+  }catch(e){ alert("Error: "+e.message); }
+}
+
+async function deleteMeta(idx){
+  const meta=window._loreMetaItems[idx];
+  if(window._loreMetaItems.length<=1){ alert("Debe haber al menos una meta."); return; }
+  if(!confirm(`¿Eliminar la meta "${meta.txt}"?`)) return;
+  try{
+    const file=await getFile("data.js");
+    const content=base64ToUtf8(file.content);
+    const newContent=content.replace(/\s*\{\s*ico:"(?:\\.|[^"\\])*",\s*txt:"(?:\\.|[^"\\])*"(?:\s*)\},?/,
+      (match,offset)=> offset===meta.idx-content.slice(0,meta.idx).search(/\s*\{/)? "" : match);
+    // simpler: replace the raw meta entry
+    const escaped=meta.raw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const cleaned=content.replace(new RegExp(',?\\s*'+escaped),'');
+    await freshPut("data.js",utf8ToBase64(cleaned),"Elimina meta de lore");
+    await loadLore();
+  }catch(e){ alert("Error: "+e.message); }
+}
+
+async function addMeta(){
+  if(!cfg.token){ alert("Conecta tu token primero."); return; }
+  const ico=document.getElementById("meta-ico").value.trim()||"✨";
+  const txt=document.getElementById("meta-txt").value.trim();
+  if(!txt){ alert("Escribe el texto de la meta."); return; }
+  try{
+    const file=await getFile("data.js");
+    const content=base64ToUtf8(file.content);
+    const marker="  metas: [\n";
+    const idx=content.indexOf(marker);
+    if(idx===-1) throw new Error("No se encontró el array metas.");
+    const newLine=`    { ico:"${esc(ico)}", txt:"${esc(txt)}" },\n`;
+    const newContent=content.slice(0,idx+marker.length)+newLine+content.slice(idx+marker.length);
+    await freshPut("data.js",utf8ToBase64(newContent),"Agrega meta de lore");
+    document.getElementById("meta-ico").value="";
+    document.getElementById("meta-txt").value="";
+    await loadLore();
+  }catch(e){ alert("Error: "+e.message); }
+}
+
+/* ==== GESTIONAR JUEGOS ==== */
+const GAME_LINE_RE=/^(\s*)\{\s*titulo:"((?:\\.|[^"\\])*)",\s*nota:(\d+),\s*rec:"(si|no|tal)",\s*nota_texto:"((?:\\.|[^"\\])*)"(?:,\s*imagen:"((?:\\.|[^"\\])*)")?\s*\},?\s*$/;
+
+async function loadGamesManage(){
+  const box=document.getElementById("games-list");
+  if(!cfg.token){ box.innerHTML='<div class="manage-empty" style="color:var(--err)">Conecta tu token primero.</div>'; return; }
+  box.innerHTML='<div class="manage-empty">Cargando...</div>';
+  try{
+    const file=await getFile("data.js");
+    window._dataFile=file;
+    const content=base64ToUtf8(file.content);
+    window._dataLines=content.split("\n");
+    const games=[];
+    window._dataLines.forEach((line,i)=>{
+      const m=line.match(GAME_LINE_RE);
+      if(m) games.push({lineIndex:i,titulo:unesc(m[2]),nota:parseInt(m[3]),rec:m[4],nota_texto:unesc(m[5]),imagen:m[6]||""});
+    });
+    window._gameItems=games;
+    renderGamesList(games);
+  }catch(e){ box.innerHTML=`<div class="manage-empty" style="color:var(--err)">Error: ${e.message}</div>`; }
+}
+
+const REC_LABEL={ si:"✅ Recomienda", no:"❌ No recomienda", tal:"🤔 Tal vez" };
+
+function renderGamesList(games){
+  const box=document.getElementById("games-list");
+  if(!games.length){ box.innerHTML='<div class="manage-empty">No hay juegos aún.</div>'; return; }
+  box.innerHTML="";
+  games.forEach(g=>{
+    const ovejas="🐑".repeat(g.nota);
+    const thumb = g.imagen ? `<img src="https://${cfg.owner}.github.io/${cfg.repo}/${g.imagen}" style="width:36px;height:46px;object-fit:cover;border-radius:6px;flex-shrink:0" onerror="this.style.display='none'"/>` : "";
+    const div=document.createElement("div");
+    div.className="song-item";
+    div.style.alignItems="center";
+    div.innerHTML=`
+      ${thumb}
+      <div class="song-info">
+        <div class="si-title">${g.titulo} ${ovejas} (${g.nota}/5)</div>
+        <div class="si-id">${REC_LABEL[g.rec]}${g.nota_texto?" · "+g.nota_texto:""}</div>
+      </div>
+      <button class="icon-btn danger" title="Eliminar" onclick="deleteGame(${g.lineIndex})">🗑</button>`;
+    box.appendChild(div);
+  });
+}
+
+async function deleteGame(lineIndex){
+  const game=window._gameItems.find(x=>x.lineIndex===lineIndex);
+  if(!confirm(`¿Eliminar el juego "${game.titulo}"?`)) return;
+  try{
+    const lines=window._dataLines.slice(); lines.splice(lineIndex,1);
+    await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Elimina juego: ${game.titulo}`);
+    await loadGamesManage();
+  }catch(e){ alert("Error al eliminar: "+e.message); }
+}
+
+async function addGame(){
+  if(!cfg.token){ alert("Conecta tu token primero."); return; }
+  const titulo=document.getElementById("game-titulo").value.trim();
+  const nota=parseInt(document.getElementById("game-nota").value);
+  const rec=document.getElementById("game-rec").value;
+  const nota_texto=document.getElementById("game-nota-texto").value.trim();
+  const imgInput=document.getElementById("game-imagen");
+  const imgFile=imgInput.files[0];
+  if(!titulo){ alert("Escribe el nombre del juego."); return; }
+  try{
+    let imagenPath="";
+    if(imgFile){
+      const base64=await new Promise((res,rej)=>{
+        const reader=new FileReader();
+        reader.onload=e=>res(e.target.result.split(",")[1]);
+        reader.onerror=rej;
+        reader.readAsDataURL(imgFile);
+      });
+      const cleanName=Date.now()+"-"+imgFile.name.toLowerCase().replace(/[^a-z0-9.\-]/g,"-").replace(/-+/g,"-");
+      imagenPath=`imagenes/juegos/${cleanName}`;
+      await putFile(imagenPath,base64,`Sube portada: ${titulo}`);
+    }
+    const file=await getFile("data.js");
+    const content=base64ToUtf8(file.content);
+    const marker="const JUEGOS = [\n";
+    const idx=content.indexOf(marker);
+    if(idx===-1) throw new Error("No se encontró el array JUEGOS.");
+    const newLine=`  { titulo:"${esc(titulo)}", nota:${nota}, rec:"${rec}", nota_texto:"${esc(nota_texto)}"${imagenPath?`, imagen:"${imagenPath}"`:"" } },\n`;
+    const newContent=content.slice(0,idx+marker.length)+newLine+content.slice(idx+marker.length);
+    await freshPut("data.js",utf8ToBase64(newContent),`Agrega juego: ${titulo}`);
+    document.getElementById("game-titulo").value="";
+    document.getElementById("game-nota-texto").value="";
+    document.getElementById("game-nota").value="3";
+    document.getElementById("game-rec").value="tal";
+    imgInput.value="";
+    await loadGamesManage();
+  }catch(e){ alert("Error al agregar: "+e.message); }
+}
+
+/* ==== LOG ==== */
+function logLine(text,type="info"){
+  const log=document.getElementById("log"); log.classList.add("show");
+  const d=document.createElement("div"); d.className="line "+type; d.textContent=text;
+  log.appendChild(d); log.scrollTop=log.scrollHeight;
+}
+function clearLog(){ const log=document.getElementById("log"); log.innerHTML=""; log.classList.remove("show"); }
+
+/* ==== CARGAR CATEGORÍAS DESDE REPO ==== */
+async function loadCategoriesFromRepo(){
+  if(!cfg.token) return;
+  try{
+    const file=await getFile("data.js");
+    const content=base64ToUtf8(file.content);
+    const match=content.match(/const IMAGENES = \[([\s\S]*?)\];/);
+    if(match){
+      const cats=new Set(["fanart","emotes","memes"]);
+      for(const m of match[1].matchAll(/categoria:"([^"]+)"/g)) cats.add(m[1]);
+      CATEGORIES=Array.from(cats); renderCatChips(); renderCatSelect();
+    }
+  }catch(e){ logLine("No se pudieron leer las categorías actuales: "+e.message,"err"); }
+}
+
+/* ==== PUBLICAR ==== */
+async function publish(){
+  clearLog();
+  if(!cfg.token){ logLine("Primero conecta tu token de GitHub arriba.","err"); return; }
+  if(!currentFile){ logLine("Selecciona o arrastra una imagen primero.","err"); return; }
+
+  const titulo=document.getElementById("f-titulo").value.trim();
+  const artista=document.getElementById("f-artista").value.trim();
+  const categoria=document.getElementById("f-categoria").value;
+  const nota=document.getElementById("f-nota").value.trim();
+  const destacado=document.getElementById("f-destacado").checked;
+
+  if(!titulo||!artista){ logLine("Completa al menos el título y el artista.","err"); return; }
+
+  const btn=document.getElementById("publish-btn");
+  btn.disabled=true; btn.textContent="Publicando...";
+
+  try{
+    logLine("Subiendo imagen a la carpeta imagenes/...","info");
+    const imgPath=`imagenes/${currentFile.name}`;
+    await putFile(imgPath,currentFile.base64,`Sube fanart: ${titulo}`);
+    logLine("✓ Imagen subida correctamente.","ok");
+
+    logLine("Actualizando la galería (data.js)...","info");
+    const file=await getFile("data.js");
+    const content=base64ToUtf8(file.content);
+    const fecha=new Date().toISOString().slice(0,10);
+    const newEntry=`      { src:"${imgPath}", titulo:"${esc(titulo)}", artista:"${esc(artista)}", categoria:"${categoria}", fecha:"${fecha}", placeholder:"🎨", nota:"${esc(nota)}", destacado:${destacado} },\n`;
+    const marker="const IMAGENES = [\n";
+    const idx=content.indexOf(marker);
+    if(idx===-1) throw new Error("No se encontró el array IMAGENES en data.js — revisa que el archivo esté bien.");
+    const newContent=content.slice(0,idx+marker.length)+newEntry+content.slice(idx+marker.length);
+    await freshPut("data.js",utf8ToBase64(newContent),`Agrega fanart: ${titulo}`);
+    logLine("✓ Galería actualizada.","ok");
+    logLine("🎉 ¡Listo! Tu web pública se actualizará en 1-2 minutos.","ok");
+
+    // reset
+    currentFile=null;
+    _originalImage=null;
+    document.getElementById("file-input").value="";
+    document.getElementById("dropzone-empty").style.display="block";
+    document.getElementById("preview-wrap").classList.remove("show");
+    document.getElementById("compress-bar").classList.remove("show");
+    document.getElementById("compress-info").innerHTML="";
+    ["f-titulo","f-artista","f-nota"].forEach(id=>document.getElementById(id).value="");
+    document.getElementById("f-destacado").checked=false;
+    document.getElementById("preview-img").src="";
+    updateLivePreview();
+    loadGalleryManage();
+
+  }catch(e){ logLine("✕ Error: "+e.message,"err"); }
+  finally{ btn.disabled=false; btn.textContent="Publicar en la galería"; }
+}
+
+if(cfg.token){ loadCategoriesFromRepo(); loadGalleryManage(); loadMusicManage(); loadSoundsManage(); loadPhrasesManage(); loadGamesManage(); }
+</script>
+</body>
+</html>
