@@ -77,6 +77,7 @@ const IMAGENES = [
    🎮 ICONOS DE OVEJA (calificaciones de juegos)
    ============================ */
 const OVEJA_IMGS = [
+  "imagenes/ovejas/1784079627273-oveja2.png",
   "imagenes/ovejas/1784079616567-oveja1.png",
   "imagenes/ovejas/1783109805290-oveja1.png",
 ];
