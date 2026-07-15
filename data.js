@@ -45,6 +45,7 @@ const CANCIONES = [
    peso: número — más alto = sale más seguido
    ============================ */
 const SONIDOS = [
+  { tipo:"chibi", nombre:"Ovejita seria", archivo:"sonidos/1784079808918-ovejita-seria.mp3", peso:1 },
   { tipo:"chibi", nombre:"Ovejita chillona", archivo:"sonidos/1784079778408-ovejita-chillona.mp3", peso:1 },
   { tipo:"chibi", nombre:"Ovejita chikita", archivo:"sonidos/1784079749060-ovejita-chikita.mp3", peso:1 },
   { tipo:"campana", nombre:"Campanita", archivo:"sonidos/1784079723458-campanita1.mp3", peso:1 },
