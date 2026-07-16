@@ -120,11 +120,13 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:linear-grad
 .game-row .g-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
 .game-row .g-title{font-size:14px;font-weight:700;color:var(--text);letter-spacing:.02em}
 .game-row .g-sheep-row{display:flex;gap:2px;align-items:center}
-.game-row .g-sheep{width:24px;height:24px;object-fit:contain;animation:sheepBounce .4s ease both}
-.game-row .g-sheep:nth-child(2){animation-delay:.06s}
-.game-row .g-sheep:nth-child(3){animation-delay:.12s}
-.game-row .g-sheep:nth-child(4){animation-delay:.18s}
-.game-row .g-sheep:nth-child(5){animation-delay:.24s}
+.game-row .g-sheep{width:24px;height:24px;object-fit:contain;filter:grayscale(1) brightness(.55);opacity:.32;transform:scale(.72);transition:filter .35s ease,opacity .35s ease,transform .4s cubic-bezier(.34,1.56,.64,1)}
+.game-row:hover .g-sheep{filter:none;opacity:1;transform:scale(1)}
+.game-row .g-sheep:nth-child(1){transition-delay:0s}
+.game-row .g-sheep:nth-child(2){transition-delay:.06s}
+.game-row .g-sheep:nth-child(3){transition-delay:.12s}
+.game-row .g-sheep:nth-child(4){transition-delay:.18s}
+.game-row .g-sheep:nth-child(5){transition-delay:.24s}
 .game-row .g-score-label{font-size:10px;color:var(--text2);margin-left:5px}
 .game-row .g-desc{font-size:12px;color:var(--text2);line-height:1.6}
 .game-row .g-rec{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;width:fit-content;margin-top:2px}
@@ -205,6 +207,12 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:linear-grad
 .banner-fallback{position:absolute;inset:0;background:linear-gradient(135deg,#1E1428 0%,#2E1A50 50%,#110D1A 100%)}
 .banner-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;opacity:.55;z-index:0}
 #banner-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+
+/* ===== ⭐ ESTRELLA FUGAZ OCASIONAL ===== */
+.shooting-star{position:absolute;width:28px;height:28px;cursor:pointer;pointer-events:auto;z-index:2;animation:shootAcross 1.7s linear forwards}
+.shooting-star::after{content:'';position:absolute;top:50%;left:50%;width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:#fff;box-shadow:0 0 10px 4px rgba(255,255,255,.9)}
+.shooting-star::before{content:'';position:absolute;top:50%;right:50%;width:52px;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65));transform-origin:right center;transform:translateY(-50%) rotate(156deg)}
+@keyframes shootAcross{0%{opacity:0;transform:translate(0,0)}12%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
 .banner::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,var(--bg) 100%);z-index:2}
 .banner-content{position:relative;z-index:3;text-align:center;padding:0 1rem}
 
@@ -1356,6 +1364,40 @@ function chibiClick() {
   bubbleTimer = setTimeout(() => bubble.classList.remove("show"), isEgg ? 5000 : 3200);
 }
 
+/* ==== ⭐ ESTRELLA FUGAZ OCASIONAL ==== */
+function spawnShootingStar(){
+  const banner = document.querySelector(".banner");
+  if(!banner) return;
+  const el = document.createElement("div");
+  el.className = "shooting-star";
+  const startX = 15 + Math.random()*45;
+  const startY = 6 + Math.random()*18;
+  el.style.left = startX + "%";
+  el.style.top  = startY + "%";
+  const travel = 110 + Math.random()*70;
+  el.style.setProperty("--dx", travel + "px");
+  el.style.setProperty("--dy", Math.round(travel*0.45) + "px");
+  el.addEventListener("click", (e)=>{ e.stopPropagation(); catchShootingStar(el); });
+  banner.appendChild(el);
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, 1750);
+}
+function catchShootingStar(el){
+  if(el.parentNode) el.remove();
+  playRandomSheep();
+  if(navigator.vibrate){ try{ navigator.vibrate([15,40,15]); }catch(e){} }
+  const bubble = document.getElementById("chibi-bubble");
+  bubble.textContent = "✨ Oh, mira... una estrella fugaz. Pide un deseo, mi corderito — yo ya pedí el mío 💫💜";
+  bubble.className   = "chibi-bubble egg";
+  bubble.classList.add("show");
+  clearTimeout(bubbleTimer);
+  bubbleTimer = setTimeout(() => bubble.classList.remove("show"), 5500);
+}
+function scheduleShootingStar(){
+  const delay = 90000 + Math.random()*90000; // entre 1.5 y 3 minutos
+  setTimeout(()=>{ spawnShootingStar(); scheduleShootingStar(); }, delay);
+}
+scheduleShootingStar();
+
 /* ==== GALERÍA ==== */
 let currentCat="all", currentSort="new", currentSearch="";
 
@@ -1378,6 +1420,27 @@ function setupObserver(){
   },{threshold:0.08});
 }
 setupObserver();
+
+/* ==== INCLINACIÓN 3D SUTIL EN LAS CARDS (solo desktop, con mouse real) ==== */
+(function initCardTilt(){
+  if(!window.matchMedia || !matchMedia("(hover:hover) and (pointer:fine)").matches) return;
+  const container=document.getElementById("masonry");
+  if(!container) return;
+  container.addEventListener("mousemove",e=>{
+    const card=e.target.closest(".card");
+    if(!card) return;
+    const r=card.getBoundingClientRect();
+    const px=(e.clientX-r.left)/r.width;
+    const py=(e.clientY-r.top)/r.height;
+    const rx=(0.5-py)*9;
+    const ry=(px-0.5)*9;
+    card.style.transform=`perspective(700px) rotateX(${rx}deg) rotateY(${ry}deg) translateY(-5px) scale(1.02)`;
+  });
+  container.addEventListener("mouseout",e=>{
+    const card=e.target.closest(".card");
+    if(card && (!e.relatedTarget || !card.contains(e.relatedTarget))) card.style.transform="";
+  });
+})();
 
 function renderGallery(){
   renderFeatured();
