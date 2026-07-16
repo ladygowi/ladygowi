@@ -191,9 +191,9 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:linear-grad
 #countdown-bar{position:relative;z-index:2;background:var(--bg2);border-bottom:.5px solid var(--border-c);padding:.55rem 1rem;text-align:center;font-size:11.5px;color:var(--text2);letter-spacing:.06em;display:none}
 #countdown-bar.show{display:block}
 #countdown-bar strong{color:var(--accent-light)}
-.flip-num{display:inline-block;min-width:1.4em;transform-style:preserve-3d}
-.flip-num.flip{animation:flipNum .5s ease}
-@keyframes flipNum{0%{transform:rotateX(0deg);opacity:1}45%{transform:rotateX(90deg);opacity:.25}55%{transform:rotateX(-90deg);opacity:.25}100%{transform:rotateX(0deg);opacity:1}}
+.flip-num{display:inline-block;min-width:1.4em;perspective:200px}
+.flip-num.flip{animation:flipNum .6s cubic-bezier(.4,0,.2,1)}
+@keyframes flipNum{0%{transform:rotateX(0deg);opacity:1}40%{transform:rotateX(100deg);opacity:.2}41%{transform:rotateX(-100deg)}100%{transform:rotateX(0deg);opacity:1}}
 
 /* BANNER */
 .banner{position:relative;width:100%;height:280px;overflow:hidden;display:flex;align-items:center;justify-content:center;z-index:1}
@@ -218,9 +218,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:linear-grad
 @keyframes sparkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
 
 /* ===== TÍTULO ===== */
-.site-title{font-family:'Cinzel',serif;font-size:clamp(36px,9vw,82px);font-weight:700;letter-spacing:.14em;line-height:1;cursor:pointer;user-select:none;position:relative;display:inline-block;overflow:hidden}
-.site-title::after{content:'';position:absolute;top:0;left:-30%;width:18%;height:100%;background:linear-gradient(115deg,transparent 0%,rgba(255,255,255,.55) 50%,transparent 100%);transform:skewX(-20deg);pointer-events:none;mix-blend-mode:overlay;animation:titleSweep 9s ease-in-out infinite}
-@keyframes titleSweep{0%,78%{left:-30%}98%,100%{left:130%}}
+.site-title{font-family:'Cinzel',serif;font-size:clamp(36px,9vw,82px);font-weight:700;letter-spacing:.14em;line-height:1;cursor:pointer;user-select:none;position:relative;display:inline-block}
 .site-title .lady{color:#E8DEFF;text-shadow:0 0 30px rgba(232,222,255,.35),0 2px 10px rgba(0,0,0,.6)}
 .site-title .gowi{color:#A855F7;text-shadow:0 0 40px rgba(168,85,247,.6),0 2px 10px rgba(0,0,0,.6)}
 .site-title.shine .lady{animation:letterShine .8s ease}
@@ -480,21 +478,25 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:linear-grad
 /* ===== MODAL: JUEGO RANDOM ===== */
 .game-random-modal{display:none;position:fixed;inset:0;background:rgba(10,5,20,.92);z-index:100;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(6px)}
 .game-random-modal.open{display:flex}
-.grm-card{position:relative;display:flex;max-width:760px;width:100%;background:var(--card);border:.5px solid rgba(201,168,232,.35);border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.grm-img-wrap{flex:1 1 44%;min-height:260px;background:var(--bg2);position:relative;overflow:hidden;opacity:0;transform:translateX(-24px);transition:opacity .45s ease, transform .45s ease}
-.grm-img-wrap img{width:100%;height:100%;object-fit:cover;display:block}
-.grm-info{flex:1 1 56%;padding:1.8rem 1.9rem;display:flex;flex-direction:column;justify-content:center;gap:8px;opacity:0;transform:translateX(24px);transition:opacity .45s ease .15s, transform .45s ease .15s}
+.grm-card{position:relative;display:flex;max-width:760px;width:100%;min-height:340px;background:var(--card);border:.5px solid rgba(201,168,232,.35);border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.grm-img-wrap{flex:1 1 46%;position:relative;overflow:hidden;opacity:0;transform:translateX(-24px);transition:opacity .45s ease, transform .45s ease}
+.grm-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;inset:0}
+.grm-img-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 60%,var(--card) 145%)}
+.grm-info{flex:1 1 54%;padding:2.2rem 2.4rem;display:flex;flex-direction:column;justify-content:center;gap:14px;opacity:0;transform:translateX(24px);transition:opacity .45s ease .15s, transform .45s ease .15s}
 .game-random-modal.open .grm-img-wrap{opacity:1;transform:none}
 .game-random-modal.open .grm-info{opacity:1;transform:none}
-.grm-eyebrow{font-size:11px;letter-spacing:.12em;color:var(--accent-light);text-transform:uppercase}
-.grm-title{font-family:'Cinzel',serif;font-size:26px;color:var(--text);line-height:1.15}
-.grm-sheep img{width:22px;height:22px;margin-right:2px}
-.grm-rec{font-size:13px;font-weight:600}
-.grm-desc{font-size:13px;color:var(--text2);line-height:1.5;font-style:italic}
+.grm-title{font-family:'Cinzel',serif;font-size:32px;color:var(--text);line-height:1.15;text-shadow:0 2px 14px rgba(0,0,0,.4)}
+.grm-sheep{display:flex;align-items:center;gap:2px}
+.grm-sheep img{width:30px;height:30px}
+.grm-rec{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:6px 14px;border-radius:20px;background:rgba(201,168,232,.12);border:.5px solid var(--tag-border);color:var(--text)}
+.grm-desc{font-size:14.5px;color:var(--text2);line-height:1.65;font-style:italic;border-left:2px solid var(--accent);padding-left:14px;margin-top:4px}
+.grm-desc:empty{display:none}
 @media (max-width:640px){
   .grm-card{flex-direction:column;max-height:88vh;overflow-y:auto}
-  .grm-img-wrap{min-height:180px}
-  .grm-info{padding:1.3rem 1.4rem}
+  .grm-img-wrap{min-height:200px}
+  .grm-img-wrap::after{background:linear-gradient(0deg,var(--card) 2%,transparent 40%)}
+  .grm-info{padding:1.5rem 1.5rem 1.8rem}
+  .grm-title{font-size:24px}
 }
 
 /* REDES SOCIALES */
@@ -838,7 +840,6 @@ input[type=range].mp-vol::-webkit-slider-thumb{-webkit-appearance:none;width:10p
       <div id="grm-placeholder" class="card-placeholder" style="height:100%;font-size:52px">🎮</div>
     </div>
     <div class="grm-info">
-      <div class="grm-eyebrow">🎲 Tu juego random es...</div>
       <div class="grm-title" id="grm-title"></div>
       <div class="grm-sheep" id="grm-sheep"></div>
       <div class="grm-rec" id="grm-rec"></div>
@@ -1506,9 +1507,41 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeRandomGame();})
 
 /* ==== 🎉 MODO FIESTA (ovejita secreta del footer) ==== */
 let partyActive=false;
+function playPartySound(durationSec){
+  try{
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx) return;
+    const ctx=new Ctx();
+    const master=ctx.createGain();
+    master.gain.value=0.16;
+    master.connect(ctx.destination);
+    const notes=[523.25,587.33,659.25,783.99,880,987.77,1046.5]; // repique alegre tipo campanitas
+    const start=ctx.currentTime;
+    let t=0;
+    while(t<durationSec-0.3){
+      const freq=notes[Math.floor(Math.random()*notes.length)];
+      const osc=ctx.createOscillator();
+      const g=ctx.createGain();
+      osc.type="triangle";
+      osc.frequency.value=freq;
+      g.gain.setValueAtTime(0,start+t);
+      g.gain.linearRampToValueAtTime(0.55,start+t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,start+t+0.4);
+      osc.connect(g); g.connect(master);
+      osc.start(start+t);
+      osc.stop(start+t+0.45);
+      t+=0.13+Math.random()*0.11;
+    }
+    // se apaga suavemente en los últimos 2.5s, como una fiesta que termina
+    master.gain.setValueAtTime(0.16,start+durationSec-2.5);
+    master.gain.linearRampToValueAtTime(0,start+durationSec);
+    setTimeout(()=>{ try{ ctx.close(); }catch(e){} },(durationSec+0.5)*1000);
+  }catch(e){}
+}
 function partyMode(){
   if(partyActive) return;
   partyActive=true;
+  playPartySound(10);
   const overlay=document.createElement("div");
   overlay.className="party-overlay";
   document.body.appendChild(overlay);
