@@ -349,8 +349,24 @@ body.locked .wrap{display:none}
   <!-- ===== REGLAS ===== -->
   <div class="admin-section" id="admintab-reglas">
     <div class="panel">
-      <div class="panel-title">📋 Reglas — próximamente</div>
-      <div class="manage-empty" style="padding:1rem 0">La edición de reglas desde el panel está en desarrollo. Por ahora edítalas directamente en el código del index.html en la sección <code>tab-reglas</code>.</div>
+      <div class="panel-title">📋 Reglas</div>
+      <div class="refresh-row"><button class="btn-secondary" onclick="loadReglasManage()">↻ Actualizar lista</button></div>
+      <div id="reglas-list-admin"><div class="manage-empty">Conecta tu token y pulsa "Actualizar lista".</div></div>
+      <div style="border-top:.5px solid var(--border-c);margin-top:1.4rem;padding-top:1.2rem">
+        <div class="field">
+          <label>Título de la regla</label>
+          <input type="text" id="regla-titulo" placeholder="Ej: Sin insultos ni toxicidad."/>
+        </div>
+        <div class="field">
+          <label>Texto (opcional, después del título)</label>
+          <textarea id="regla-texto" placeholder="Ej: La secta debe ser un lugar agradable donde pertenecer."></textarea>
+        </div>
+        <div class="field">
+          <label>Nota pequeña de advertencia (opcional)</label>
+          <input type="text" id="regla-sub" placeholder="Ej: ⚠️ Se considerará acoso y será sancionado."/>
+        </div>
+        <button class="btn-primary" onclick="addRegla()">Agregar regla</button>
+      </div>
     </div>
   </div>
 
@@ -433,6 +449,7 @@ function switchAdminTab(tab){
   if(tab==="musica"){ loadMusicManage(); }
   if(tab==="chibi"){ loadSoundsManage(); loadPhrasesManage(); }
   if(tab==="juegos"){ loadGamesManage(); loadSheepIcons(); }
+  if(tab==="reglas"){ loadReglasManage(); }
 }
 
 /* ==== LOCK SCREEN (capa simple, no es seguridad real — ver nota) ==== */
@@ -640,6 +657,34 @@ const utf8ToBase64=str=>btoa(unescape(encodeURIComponent(str)));
 const base64ToUtf8=str=>decodeURIComponent(escape(atob(str)));
 const esc=s=>(s||"").replace(/"/g,'\\"');
 const unesc=s=>(s||"").replace(/\\"/g,'"');
+
+/* Comprime una imagen a WebP (calidad 82%, máx 1800px lado mayor).
+   Se usa donde no hay slider de compresión visible (ej: portadas de juegos),
+   para que igual pesen poco sin complicarle la vida al usuario. */
+function compressImageFile(file, quality=0.82, maxSide=1800){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const canvas=document.createElement("canvas");
+        let w=img.width, h=img.height;
+        if(w>maxSide||h>maxSide){
+          if(w>h){ h=Math.round(h*maxSide/w); w=maxSide; }
+          else{ w=Math.round(w*maxSide/h); h=maxSide; }
+        }
+        canvas.width=w; canvas.height=h;
+        canvas.getContext("2d").drawImage(img,0,0,w,h);
+        const dataUrl=canvas.toDataURL("image/webp",quality);
+        resolve({ base64:dataUrl.split(",")[1], mime:"image/webp" });
+      };
+      img.onerror=reject;
+      img.src=e.target.result;
+    };
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 /* ==== GESTIONAR IMÁGENES ==== */
 const IMG_LINE_RE=/^(\s*)\{\s*src:"((?:\\.|[^"\\])*)",\s*titulo:"((?:\\.|[^"\\])*)",\s*artista:"((?:\\.|[^"\\])*)",\s*categoria:"((?:\\.|[^"\\])*)",\s*fecha:"((?:\\.|[^"\\])*)",\s*placeholder:"((?:\\.|[^"\\])*)",\s*nota:"((?:\\.|[^"\\])*)",\s*destacado:(true|false)\s*\},?\s*$/;
@@ -1276,13 +1321,8 @@ async function addGame(){
   try{
     let imagenPath="";
     if(imgFile){
-      const base64=await new Promise((res,rej)=>{
-        const reader=new FileReader();
-        reader.onload=e=>res(e.target.result.split(",")[1]);
-        reader.onerror=rej;
-        reader.readAsDataURL(imgFile);
-      });
-      const cleanName=Date.now()+"-"+imgFile.name.toLowerCase().replace(/[^a-z0-9.\-]/g,"-").replace(/-+/g,"-");
+      const {base64,mime}=await compressImageFile(imgFile);
+      const cleanName=Date.now()+"-"+imgFile.name.toLowerCase().replace(/\.\w+$/,"").replace(/[^a-z0-9.\-]/g,"-").replace(/-+/g,"-")+".webp";
       imagenPath=`imagenes/juegos/${cleanName}`;
       await putFile(imagenPath,base64,`Sube portada: ${titulo}`);
     }
@@ -1316,13 +1356,8 @@ async function saveGameEdit(lineIndex){
   try{
     let imagenPath=game.imagen||"";
     if(imgFile){
-      const base64=await new Promise((res,rej)=>{
-        const reader=new FileReader();
-        reader.onload=e=>res(e.target.result.split(",")[1]);
-        reader.onerror=rej;
-        reader.readAsDataURL(imgFile);
-      });
-      const cleanName=Date.now()+"-"+imgFile.name.toLowerCase().replace(/[^a-z0-9.\-]/g,"-").replace(/-+/g,"-");
+      const {base64,mime}=await compressImageFile(imgFile);
+      const cleanName=Date.now()+"-"+imgFile.name.toLowerCase().replace(/\.\w+$/,"").replace(/[^a-z0-9.\-]/g,"-").replace(/-+/g,"-")+".webp";
       imagenPath=`imagenes/juegos/${cleanName}`;
       await putFile(imagenPath,base64,`Sube portada: ${titulo}`);
     }
@@ -1331,6 +1366,103 @@ async function saveGameEdit(lineIndex){
     await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Edita juego: ${titulo}`);
     await loadGamesManage();
   }catch(e){ alert("Error al guardar: "+e.message); }
+}
+
+/* ==== GESTIONAR REGLAS ==== */
+const REGLA_LINE_RE=/^(\s*)\{\s*titulo:"((?:\\.|[^"\\])*)",\s*texto:"((?:\\.|[^"\\])*)",\s*sub:"((?:\\.|[^"\\])*)"\s*\},?\s*$/;
+
+async function loadReglasManage(){
+  const box=document.getElementById("reglas-list-admin");
+  if(!cfg.token){ box.innerHTML='<div class="manage-empty" style="color:var(--err)">Conecta tu token primero.</div>'; return; }
+  box.innerHTML='<div class="manage-empty">Cargando...</div>';
+  try{
+    const file=await getFile("data.js");
+    window._dataFile=file;
+    const content=base64ToUtf8(file.content);
+    window._dataLines=content.split("\n");
+    const reglas=[];
+    window._dataLines.forEach((line,i)=>{
+      const m=line.match(REGLA_LINE_RE);
+      if(m) reglas.push({lineIndex:i,titulo:unesc(m[2]),texto:unesc(m[3]),sub:unesc(m[4])});
+    });
+    window._reglaItems=reglas;
+    renderReglasManageList(reglas);
+  }catch(e){ box.innerHTML=`<div class="manage-empty" style="color:var(--err)">Error: ${e.message}</div>`; }
+}
+
+function renderReglasManageList(reglas){
+  const box=document.getElementById("reglas-list-admin");
+  if(!reglas.length){ box.innerHTML='<div class="manage-empty">No hay reglas aún.</div>'; return; }
+  box.innerHTML="";
+  reglas.forEach((r,i)=>{
+    const div=document.createElement("div");
+    div.innerHTML=`
+      <div class="song-item" style="align-items:center">
+        <div class="song-info">
+          <div class="si-title">${i+1}. ${r.titulo}</div>
+          <div class="si-id">${r.texto?r.texto+" ":""}${r.sub?"· "+r.sub:""}</div>
+        </div>
+        <button class="icon-btn" title="Editar" onclick="toggleEdit(${r.lineIndex})">✎</button>
+        <button class="icon-btn danger" title="Eliminar" onclick="deleteRegla(${r.lineIndex})">🗑</button>
+      </div>
+      <div class="edit-form" id="edit-${r.lineIndex}">
+        <div class="field"><label>Título</label><input type="text" id="e-regla-titulo-${r.lineIndex}" value="${r.titulo.replace(/"/g,'&quot;')}"/></div>
+        <div class="field"><label>Texto</label><textarea id="e-regla-texto-${r.lineIndex}">${r.texto}</textarea></div>
+        <div class="field"><label>Nota pequeña (opcional)</label><input type="text" id="e-regla-sub-${r.lineIndex}" value="${r.sub.replace(/"/g,'&quot;')}"/></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-primary" style="flex:1" onclick="saveReglaEdit(${r.lineIndex})">Guardar cambios</button>
+          <button class="btn-secondary" onclick="toggleEdit(${r.lineIndex})">Cancelar</button>
+        </div>
+      </div>`;
+    box.appendChild(div);
+  });
+}
+
+async function saveReglaEdit(lineIndex){
+  const indent=window._dataLines[lineIndex].match(/^(\s*)/)[1];
+  const titulo=document.getElementById(`e-regla-titulo-${lineIndex}`).value.trim();
+  const texto=document.getElementById(`e-regla-texto-${lineIndex}`).value.trim();
+  const sub=document.getElementById(`e-regla-sub-${lineIndex}`).value.trim();
+  if(!titulo){ alert("Escribe el título de la regla."); return; }
+  const newLine=`${indent}{ titulo:"${esc(titulo)}", texto:"${esc(texto)}", sub:"${esc(sub)}" },`;
+  const lines=window._dataLines.slice(); lines[lineIndex]=newLine;
+  try{
+    await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Edita regla: ${titulo}`);
+    await loadReglasManage();
+  }catch(e){ alert("Error al guardar: "+e.message); }
+}
+
+async function deleteRegla(lineIndex){
+  if(window._reglaItems.length<=1){ alert("Debe quedar al menos una regla."); return; }
+  const regla=window._reglaItems.find(x=>x.lineIndex===lineIndex);
+  if(!confirm(`¿Eliminar la regla "${regla.titulo}"?`)) return;
+  try{
+    const lines=window._dataLines.slice(); lines.splice(lineIndex,1);
+    await freshPut("data.js",utf8ToBase64(lines.join("\n")),`Elimina regla: ${regla.titulo}`);
+    await loadReglasManage();
+  }catch(e){ alert("Error al eliminar: "+e.message); }
+}
+
+async function addRegla(){
+  if(!cfg.token){ alert("Conecta tu token primero."); return; }
+  const titulo=document.getElementById("regla-titulo").value.trim();
+  const texto=document.getElementById("regla-texto").value.trim();
+  const sub=document.getElementById("regla-sub").value.trim();
+  if(!titulo){ alert("Escribe el título de la regla."); return; }
+  try{
+    const file=await getFile("data.js");
+    const content=base64ToUtf8(file.content);
+    const marker="const REGLAS = [\n";
+    const idx=content.indexOf(marker);
+    if(idx===-1) throw new Error("No se encontró el array REGLAS.");
+    const newLine=`  { titulo:"${esc(titulo)}", texto:"${esc(texto)}", sub:"${esc(sub)}" },\n`;
+    const newContent=content.slice(0,idx+marker.length)+newLine+content.slice(idx+marker.length);
+    await freshPut("data.js",utf8ToBase64(newContent),`Agrega regla: ${titulo}`);
+    document.getElementById("regla-titulo").value="";
+    document.getElementById("regla-texto").value="";
+    document.getElementById("regla-sub").value="";
+    await loadReglasManage();
+  }catch(e){ alert("Error al agregar: "+e.message); }
 }
 
 /* ==== LOG ==== */
