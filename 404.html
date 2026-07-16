@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>404 — Te perdiste, corderito 🐑 | LadyGowi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{--bg:#110D1A;--bg2:#1E1428;--card:#1A1025;--border-c:#2E1F45;--text:#E8E0F5;--text2:#A87FD4;--accent:#7B5EA7;--accent-light:#C9A8E8}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{overflow-x:hidden;width:100%}
+body{
+  background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  text-align:center;padding:2rem 1rem;position:relative;overflow:hidden;
+}
+canvas#stars{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+.wrap{position:relative;z-index:1;max-width:480px}
+.chibi-lost{width:150px;height:auto;filter:drop-shadow(0 0 40px rgba(123,94,167,.55));animation:floaty 4s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-14px) rotate(2deg)}}
+.num-404{
+  font-family:'Cinzel',serif;font-weight:700;font-size:clamp(64px,18vw,110px);
+  letter-spacing:.08em;line-height:1;margin:1.2rem 0 .4rem;
+  color:#E8DEFF;text-shadow:0 0 40px rgba(168,85,247,.55),0 2px 10px rgba(0,0,0,.6);
+}
+.msg-title{font-family:'Cinzel',serif;font-size:clamp(17px,4vw,22px);letter-spacing:.06em;color:var(--accent-light);margin-bottom:.7rem}
+.msg-sub{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:2rem}
+.btn-home{
+  display:inline-flex;align-items:center;gap:8px;padding:12px 26px;border-radius:30px;
+  border:.5px solid var(--accent);background:rgba(123,94,167,.15);color:var(--text);
+  text-decoration:none;font-size:13px;letter-spacing:.05em;transition:all .25s;
+}
+.btn-home:hover{background:var(--accent);box-shadow:0 6px 20px rgba(123,94,167,.4);transform:translateY(-2px)}
+.footprints{margin-top:2.2rem;font-size:18px;letter-spacing:14px;opacity:.5}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+<div class="wrap">
+  <img class="chibi-lost" src="chibi_gowi.png" alt="Chibi de LadyGowi perdida entre las estrellas" onerror="this.style.display='none'"/>
+  <div class="num-404">404</div>
+  <div class="msg-title">¡Uy! Esta oveja se perdió del rebaño</div>
+  <div class="msg-sub">La página que buscás no existe o se movió a otro lugar de las estrellas.<br/>Volvamos juntos al redil 💜</div>
+  <a class="btn-home" href="/ladygowi/">🐑 Volver al inicio</a>
+  <div class="footprints">🐾 🐾 🐾</div>
+</div>
+<script>
+(function(){
+  var c=document.getElementById("stars"),ctx=c.getContext("2d"),W,H,stars;
+  function resize(){W=c.width=innerWidth;H=c.height=innerHeight}
+  function build(){
+    var n=Math.min(Math.floor(W*H/9000),140);
+    stars=Array.from({length:n},function(){
+      return{x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.4+.3,
+        a:Math.random()*.5+.15,pulse:Math.random()*Math.PI*2,speed:Math.random()*.5+.3};
+    });
+  }
+  function tick(t){
+    ctx.clearRect(0,0,W,H);
+    stars.forEach(function(s){
+      var a=s.a+Math.sin(t/1000*s.speed+s.pulse)*.25;
+      ctx.beginPath();
+      ctx.fillStyle="rgba(201,168,232,"+Math.max(0,a)+")";
+      ctx.arc(s.x,s.y,s.r,0,7);
+      ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  resize(); build();
+  window.addEventListener("resize",function(){resize();build();});
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
