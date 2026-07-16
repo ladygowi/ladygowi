@@ -74,6 +74,26 @@ const IMAGENES = [
 ];
 
 /* ============================
+   REGLAS DE LA COMUNIDAD
+   ============================ */
+const REGLAS = [
+  { titulo:"Sin insultos ni toxicidad.", texto:"La secta debe ser un lugar agradable donde pertenecer. Trátenla con amor 💜", sub:"" },
+  { titulo:"Sin contenido dañino.", texto:"No hagas posts promoviendo violencia, fraudes, gore o contenido +18 sin consentimiento de la Gow o Mods.", sub:"" },
+  { titulo:"Sin spam ni publicidad.", texto:"No publiques stream/discord/página u otros links que te beneficien de alguna forma.", sub:"" },
+  { titulo:"No Spoilear.", texto:"Si LadyGowi está jugando o viendo algo, guarda los spoilers para ti. 🤐", sub:"" },
+  { titulo:"Sin coaching no solicitado.", texto:"Evita dar consejos no pedidos sobre cómo jugar, hablar o comportarse.", sub:"" },
+  { titulo:"Sin comentarios románticos o sexuales.", texto:"Ni en el muro general ni por privado a la streamer.", sub:"⚠️ Se considerará acoso y será sancionado." },
+  { titulo:"Problemas personales, en privado.", texto:"No traigan conflictos personales al servidor.", sub:"" },
+  { titulo:"Respeto en el chat de voz.", texto:"No entren a gritar ni a interrumpir continuamente a propósito. 🎙️", sub:"" },
+  { titulo:"Sin comentarios negativos.", texto:"No hagan comentarios innecesarios o negativos hacia otras comunidades, juegos o personas.", sub:"" },
+  { titulo:"Sin abuso de comandos ni menciones.", texto:"Úsenlos con moderación y con propósito.", sub:"" },
+  { titulo:"No entrar al chat de voz en estado de ebriedad.", texto:"", sub:"🍹 JUGOSOS — quédense en casa y duerman" },
+  { titulo:"PROHIBIDO HABLAR DE HUEVITO REY* 🐣", texto:"", sub:"" },
+  { titulo:"Sin parafilias ni contenido que promueva el daño.", texto:"(Zxxfilia, Pxdxfilia, Nxcrxfilia, etc.)", sub:"⚠️ Tampoco se permite promover el suicidio." },
+  { titulo:"No transmitir cuando la Gow esté en directo en el canal.", texto:"Respeta su espacio y momento. 📡", sub:"" },
+  { titulo:"NO a la AUTOINVITACIÓN EN STREAM.", texto:"", sub:"Siempre espera la invitación — nunca te autoinvites." },
+];
+/* ============================
    🎮 ICONOS DE OVEJA (calificaciones de juegos)
    ============================ */
 const OVEJA_IMGS = [
